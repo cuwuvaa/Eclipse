@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя</title>
+    <link rel="stylesheet" href="{% static 'EclipseUser/profile/profile.css' %}">
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>Профиль пользователя</h1>
+        </div>
+
+        <div class="profile-content">
+            <div class="avatar-section">
+                <div class="avatar-container">
+                    <img src="{{ user.get_avatar_url }}" alt="Аватар" class="avatar-image" id="avatarImage">
+                    {% if user.avatar %}
+                    <form method="post" action="{% url 'EclipseUser:delete_avatar' %}" class="delete-avatar-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-delete-avatar">Удалить аватар</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-group">
+                    <label class="info-label">Имя пользователя:</label>
+                    <span class="info-value">{{ user.get_display_name }}</span>
+                </div>
+
+                <div class="info-group">
+                    <label class="info-label">Email:</label>
+                    <span class="info-value">{{ user.email }}</span>
+                    {% if user.is_verified %}
+                        <span class="verified-badge">✓ Подтвержден</span>
+                    {% else %}
+                        <span class="unverified-badge">⚠ Не подтвержден</span>
+                    {% endif %}
+                </div>
+
+                <div class="info-group">
+                    <label class="info-label">Статус:</label>
+                    <span class="info-value {% if user.is_online %}online-status{% else %}offline-status{% endif %}">
+                        {% if user.is_online %}Онлайн{% else %}Офлайн{% endif %}
+                    </span>
+                </div>
+
+                <div class="info-group">
+                    <label class="info-label">Последняя активность:</label>
+                    <span class="info-value">{{ user.last_activity|date:"d.m.Y H:i" }}</span>
+                </div>
+
+                {% if user.bio %}
+                <div class="info-group bio-group">
+                    <label class="info-label">О себе:</label>
+                    <div class="bio-text">{{ user.bio }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="profile-actions">
+                <a href="#" class="btn-action">Редактировать профиль</a>
+                <a href="{% url 'EclipseUser:logout' %}" class="btn-logout">Выйти</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

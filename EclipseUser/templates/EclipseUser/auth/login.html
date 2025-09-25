@@ -32,7 +32,7 @@
                 <input type="text" 
                        name="username" 
                        class="form-control" 
-                       placeholder="Имя пользователя или email"
+                       placeholder="Имя пользователя"
                        value="{{ form.username.value|default:'' }}"
                        required>
                 {% if form.username.errors %}
@@ -68,7 +68,7 @@
         </form>
         
         <div class="auth-links">
-            <p>Нет аккаунта? <a href="{% url 'EclipseUser:register' %}">Зарегистрироваться</a></p>
+            <p style="color: white;">Нет аккаунта? <a href="{% url 'EclipseUser:register' %}">Зарегистрироваться</a></p>
         </div>
     </div>
 </body>

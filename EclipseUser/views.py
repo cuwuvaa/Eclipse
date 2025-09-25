@@ -33,7 +33,7 @@ def login_view(request):
     Вход пользователя
     """
     if request.user.is_authenticated:
-        return redirect('EclipseUser:proflie')
+        return redirect('EclipseUser:profile')
     
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -68,10 +68,14 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
+    return render(request, 'EclipseUser/auth/profile.html')
+
+@login_required
+def profile_edit(request):
     """
     Просмотр и редактирование профиля
     """
-    if request.method == 'POST':
+    if request.method == 'POST': 
         form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
@@ -81,7 +85,7 @@ def profile_view(request):
     else:
         form = CustomUserChangeForm(instance=request.user)
     
-    return render(request, 'EclipseUser/auth/profile.html', {'form': form})
+    return render(request, 'EclipseUser/auth/profile_edit.html', {'form': form})
 
 @login_required
 def delete_avatar(request):

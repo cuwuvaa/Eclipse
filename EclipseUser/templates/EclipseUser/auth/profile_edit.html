@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование профиля</title>
+    <link rel="stylesheet" href="{% static 'EclipseUser/profile/profile.css' %}">
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>Редактирование профиля</h1>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="profile-form">
+            {% csrf_token %}
+            
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if form.errors %}
+            <div class="form-errors">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="avatar-section">
+                <div class="avatar-container">
+                    <img src="{{ user.get_avatar_url }}" alt="Аватар" class="avatar-image" id="avatarPreview">
+                    <div class="avatar-upload">
+                        <label for="id_avatar" class="btn-avatar-upload">
+                            📁 Выбрать аватарку
+                        </label>
+                        <input type="file" name="avatar" accept="image/*" id="id_avatar" class="avatar-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-fields">
+                <div class="form-group">
+                    <label for="id_username" class="form-label">Имя пользователя</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="field-errors">
+                        {% for error in form.username.errors %}
+                        <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_email" class="form-label">Email адрес</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <div class="field-errors">
+                        {% for error in form.email.errors %}
+                        <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_bio" class="form-label">О себе</label>
+                    {{ form.bio }}
+                    <div class="char-counter">
+                        <span id="bioCounter">0</span>/500 символов
+                    </div>
+                    {% if form.bio.errors %}
+                    <div class="field-errors">
+                        {% for error in form.bio.errors %}
+                        <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">💾 Сохранить изменения</button>
+                <a href="{% url 'EclipseUser:profile' %}" class="btn-cancel">← Назад к профилю</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+
+        // Счетчик символов для био
+        const bioField = document.getElementById('id_bio');
+        const bioCounter = document.getElementById('bioCounter');
+        
+        if (bioField && bioCounter) {
+            bioCounter.textContent = bioField.value.length;
+            bioField.addEventListener('input', function() {
+                bioCounter.textContent = this.value.length;
+            });
+        }        // Предпросмотр аватарки
+        document.getElementById('id_avatar').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Валидация формы
+        document.querySelector('.profile-form').addEventListener('submit', function(e) {
+            const username = document.getElementById('id_username').value;
+            if (username.length < 3 || username.length >= 50) {
+                e.preventDefault();
+                alert('Имя пользователя должно содержать от 3 до 50 символов');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

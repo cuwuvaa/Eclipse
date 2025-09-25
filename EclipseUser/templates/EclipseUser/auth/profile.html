@@ -17,12 +17,6 @@
             <div class="avatar-section">
                 <div class="avatar-container">
                     <img src="{{ user.get_avatar_url }}" alt="Аватар" class="avatar-image" id="avatarImage">
-                    {% if user.avatar %}
-                    <form method="post" action="{% url 'EclipseUser:delete_avatar' %}" class="delete-avatar-form">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-delete-avatar">Удалить аватар</button>
-                    </form>
-                    {% endif %}
                 </div>
             </div>
 
@@ -63,7 +57,7 @@
             </div>
 
             <div class="profile-actions">
-                <a href="#" class="btn-action">Редактировать профиль</a>
+                <a href="{% url 'EclipseUser:profile_edit'%}" class="btn-action">Редактировать профиль</a>
                 <a href="{% url 'EclipseUser:logout' %}" class="btn-logout">Выйти</a>
             </div>
         </div>

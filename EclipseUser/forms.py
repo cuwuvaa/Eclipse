@@ -13,7 +13,7 @@ class CustomUserCreationForm(UserCreationForm):
         label="Никнейм",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Повторите пароль',
+            'placeholder': 'Никнейм',
         })
     )
 
@@ -85,6 +85,7 @@ class CustomUserChangeForm(UserChangeForm):
     """
     Форма для редактирования профиля пользователя
     """
+    avatar = forms.ImageField()
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'avatar', 'bio')
@@ -92,6 +93,10 @@ class CustomUserChangeForm(UserChangeForm):
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'avatar': forms.FileInput(attrs={
+                'accept': 'image/*',
+                'class': 'avatar-input'
+            }),
         }
 
 class LoginForm(forms.Form):

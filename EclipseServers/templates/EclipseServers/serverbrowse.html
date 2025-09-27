@@ -1,0 +1,81 @@
+{% extends 'EclipseChat/index.html' %}
+{% load static %}
+
+{% block title %}Серверы{% endblock %}
+{% block link %} <link rel="stylesheet" href="{% static 'EclipseServers/browse_servers.css' %}"> {% endblock link %} 
+
+{% block content %}
+<div class="servers-browse-page">
+    <div class="servers-header">
+        <h1>Серверы</h1>
+        <p>Присоединяйтесь к существующим серверам или создайте свой собственный</p>
+    </div>
+
+    <div class="servers-actions">
+        <a href="{% url 'EclipseServers:create' %}" class="create-server-btn">
+            <span class="btn-icon">+</span>
+            Создать сервер
+        </a>
+    </div>
+
+    <div class="servers-grid">
+        {% for server in servers %}
+        <div class="server-card">
+            <div class="server-image">
+                <img src="{{ server.image.url }}" alt="{{ server.name }}">
+            </div>
+            <div class="server-info">
+                <h3 class="server-name">{{ server.name }}</h3>
+                <p class="server-description">{{ server.bio|truncatewords:20 }}</p>
+                <div class="server-stats">
+                    <span class="stat">
+                        <span class="stat-icon">👥</span>
+                        {{ server.members.count }} участников
+                    </span>
+                </div>
+                <div class="server-meta">
+                    <span class="owner">Владелец: {{ server.owner.username }}</span>
+                    <span class="created">Создан: {{ server.created_at|date:"d.m.Y" }}</span>
+                </div>
+            </div>
+            <div class="server-actions">
+                {% if user in server.members.all%}
+                <a href="{% url 'EclipseServers:server' server.id %}" class="detail-btn">
+                    Подробнее
+                </a>
+                {% else %}
+                <a href="{% url 'EclipseServers:server' server.id %}" class="join-btn">
+                    Присоединяйтесь
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-servers">
+            <div class="no-servers-icon">🎭</div>
+            <h3>Серверов пока нет</h3>
+            <p>Будьте первым, кто создаст сервер!</p>
+            <a href="{% url 'EclipseServers:create' %}" class="create-first-btn">
+                Создать первый сервер
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">← Назад</a>
+        {% endif %}
+        
+        <span class="current-page">
+            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="page-btn">Вперед →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

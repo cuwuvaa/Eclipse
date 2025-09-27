@@ -1,0 +1,158 @@
+.create-server-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 50px);
+    background: #36393f;
+    padding: 20px;
+}
+
+.create-server-container {
+    width: 100%;
+    max-width: 480px;
+}
+
+.create-server-card {
+    background: #2f3136;
+    border-radius: 8px;
+    border: 1px solid #40444b;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.create-server-header {
+    padding: 24px;
+    border-bottom: 1px solid #40444b;
+    text-align: center;
+}
+
+.create-server-title {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.create-server-body {
+    padding: 24px;
+}
+
+.create-server-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #b9bbbe;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+input[type="text"],
+textarea {
+    background: #40444b;
+    border: 1px solid #202225;
+    border-radius: 4px;
+    padding: 12px;
+    color: #dcddde;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: #5865f2;
+    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.3);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.form-help {
+    color: #72767d;
+    font-size: 0.8rem;
+}
+
+.form-errors {
+    background: #ed4245;
+    color: #fff;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.field-errors {
+    color: #ed4245;
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn-primary {
+    background: #5865f2;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+}
+
+.btn-primary:hover {
+    background: #4752c4;
+}
+
+.btn-secondary {
+    background: #4f545c;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s;
+    flex: 1;
+}
+
+.btn-secondary:hover {
+    background: #686d73;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .create-server-page {
+        padding: 10px;
+    }
+    
+    .create-server-container {
+        max-width: 100%;
+    }
+    
+    .create-server-header,
+    .create-server-body {
+        padding: 20px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}

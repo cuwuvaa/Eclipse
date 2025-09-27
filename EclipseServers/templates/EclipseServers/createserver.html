@@ -1,0 +1,54 @@
+{% extends 'EclipseChat/index.html' %}
+{% load static %}
+{% block title %}Создание сервера{% endblock %}
+
+{% block link %}<link rel="stylesheet" href="{% static 'EclipseServers/create_server.css' %}">{% endblock link %}
+{% block content %}
+<div class="create-server-page">
+    <div class="create-server-container">
+        <div class="create-server-card">
+            <div class="create-server-header">
+                <h2 class="create-server-title">Создание нового сервера</h2>
+            </div>
+            
+            <div class="create-server-body">
+                <form method="post" class="create-server-form">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="form-errors">
+                        <strong>Ошибка!</strong> Пожалуйста, исправьте ошибки ниже.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">
+                            {{ form.name.label }}
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="field-errors">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.bio.id_for_label }}" class="form-label">
+                            {{ form.bio.label }}
+                        </label>
+                        {{ form.bio }}
+                        {% if form.bio.errors %}
+                        <div class="field-errors">{{ form.bio.errors }}</div>
+                        {% endif %}
+                        <div class="form-help">Максимум 500 символов</div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Создать сервер</button>
+                        <a href="{% url 'EclipseUser:profile' %}" class="btn-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'EclipseChat/index.html' %}
+{% load static %}
+
+{% block title %}{{ server.name }}{% endblock %}
+{% block link %} <link rel="stylesheet" href="{% static 'EclipseServers/current_server.css' %}"> {% endblock link %}
+{% block content %}
+<div class="server-page">
+    <div class="server-sidebar">
+        <div class="server-header">
+            <div style="display:flex;">
+                <img class="member-avatar" src="{{ server.image.url }}">
+                <h3 class="server-name">{{ server.name }}</h3>
+            </div>
+            <span class="server-label">Сервер</span>
+        </div>
+
+        <div class="server-info">
+            <h4 class="info-title">Информация о сервере</h4>
+            <p class="server-description">{{ server.bio }}</p>
+            <div class="server-stats">
+                <span class="stat">Участников: {{ server.members.count }}</span>
+            </div>
+        </div>
+
+        {% if server.owner == user %}
+        <a href="" class="edit-server-btn">
+            Редактировать сервер
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Основное содержимое -->
+    <div class="server-content">
+        <div class="content-header">
+            <div>
+                <h1 class="main-server-name">{{ server.name }}</h1>
+                <p class="main-server-description">{{ server.bio }}</p>
+                {% if user not in server.members.all %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <button class="edit-server-btn">Присоединиться</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="server-members">
+            <h2 class="section-title">Участники сервера</h2>
+            
+            <div class="members-grid">
+                {% for member in server.members.all %}
+                <div class="member-card">
+                    <img class="member-avatar" src="{{ member.avatar.url }}">
+                    <div class="member-info">
+                        {% if member.id == user.id %}
+                        <h4 class="member-name">{{ member.username }} (you) </h4>
+                        {% else %}
+                        <h4 class="member-name">{{ member.username }}</h4>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

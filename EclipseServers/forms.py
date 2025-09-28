@@ -1,11 +1,11 @@
 from django import forms
-from .models import VoiceServer, ServerMember
+from .models import Server, ServerMember
 
-class VoiceServerCreateForm(forms.ModelForm):
+class ServerCreateForm(forms.ModelForm):
     """Форма создания сервера"""
     
     class Meta:
-        model = VoiceServer
+        model = Server
         fields = ['name', 'bio']
         widgets = {
             'name': forms.TextInput(attrs={
@@ -35,11 +35,11 @@ class VoiceServerCreateForm(forms.ModelForm):
             raise forms.ValidationError("Название сервера должно содержать минимум 2 символа")
         return name
 
-class VoiceServerEditForm(forms.ModelForm):
+class ServerEditForm(forms.ModelForm):
     """Форма редактирования сервера"""
     
     class Meta:
-        model = VoiceServer
+        model = Server
         fields = ['name', 'bio']
         widgets = {
             'name': forms.TextInput(attrs={

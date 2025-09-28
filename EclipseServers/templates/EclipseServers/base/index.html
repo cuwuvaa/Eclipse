@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %} {% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'EclipseChat/main.css' %}">
+    <link rel="stylesheet" href="{% static 'EclipseServers/css/base/main.css' %}">
     {% block link %} {% endblock link %}
 </head>
 <body>
@@ -36,7 +36,7 @@
                         <div class="server-icon">+</div>
                     </a>
                 </div>
-                {% for server in user.voice_servers.all%}
+                {% for server in user.servers.all%}
                 <div class="server-item add-server" title="Создать сервер">
                     <a href="{% url 'EclipseServers:server' server.id%}" class="server-link">
                         <img src="{{server.image.url}}" style="width:30px; border-radius: 50px;">

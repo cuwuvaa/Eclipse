@@ -13,16 +13,7 @@ def avatar_upload_path(instance, filename):
 class CustomUser(AbstractUser):
     """
     Кастомная модель пользователя 
-    """
-    # Дополнительные поля
-    email = models.EmailField(
-        verbose_name='Email адрес',
-        unique=True,  # Email должен быть уникальным
-        error_messages={
-            'unique': "Пользователь с таким email уже существует.",
-        }
-    )
-    
+    """    
     avatar = models.ImageField(
         verbose_name='Аватарка',
         upload_to=avatar_upload_path,
@@ -49,13 +40,7 @@ class CustomUser(AbstractUser):
         verbose_name='Последняя активность',
         auto_now=True
     )
-    
-    # Подтверждение email
-    email_verified = models.BooleanField(
-        verbose_name='Email подтвержден',
-        default=False
-    )
-    
+
     def __str__(self):
         return self.username
     
@@ -68,12 +53,7 @@ class CustomUser(AbstractUser):
     def get_display_name(self):
         """Возвращает отображаемое имя (username)"""
         return self.username
-    
-    @property
-    def is_verified(self):
-        """Проверяет, подтвержден ли email"""
-        return self.email_verified
-    
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'

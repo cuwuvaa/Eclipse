@@ -1,13 +1,11 @@
+{% extends 'EclipseServers/base/index.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактирование профиля</title>
-    <link rel="stylesheet" href="{% static 'EclipseUser/profile/profile.css' %}">
-</head>
-<body>
+
+{% block title %}Профиль пользователя{% endblock %}
+{% block link %}<link rel="stylesheet" href="{% static 'EclipseUser/profile/profile.css' %}">
+<link rel="stylesheet" href="{% static 'EclipseUser/profile/profile_edit.css' %}">
+{% endblock %}
+{% block content %}
     <div class="profile-container">
         <div class="profile-header">
             <h1>Редактирование профиля</h1>
@@ -53,18 +51,6 @@
                     {% if form.username.errors %}
                     <div class="field-errors">
                         {% for error in form.username.errors %}
-                        <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    <label for="id_email" class="form-label">Email адрес</label>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                    <div class="field-errors">
-                        {% for error in form.email.errors %}
                         <span class="error">{{ error }}</span>
                         {% endfor %}
                     </div>
@@ -127,5 +113,4 @@
             }
         });
     </script>
-</body>
-</html>
+{% endblock %}

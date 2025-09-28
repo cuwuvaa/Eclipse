@@ -1,0 +1,342 @@
+/* Стили для страницы редактирования профиля */
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.messages {
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.alert-success {
+    background: rgba(59, 165, 92, 0.2);
+    color: #3ba55c;
+    border: 1px solid rgba(59, 165, 92, 0.3);
+}
+
+.alert-error {
+    background: rgba(237, 66, 69, 0.2);
+    color: #ed4245;
+    border: 1px solid rgba(237, 66, 69, 0.3);
+}
+
+.alert-info {
+    background: rgba(88, 101, 242, 0.2);
+    color: #5865f2;
+    border: 1px solid rgba(88, 101, 242, 0.3);
+}
+
+.form-errors {
+    margin-bottom: 20px;
+}
+
+.avatar-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.avatar-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatar-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #5865f2;
+    transition: all 0.3s ease;
+}
+
+.avatar-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-avatar-upload {
+    background: #5865f2;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: inline-block;
+}
+
+.btn-avatar-upload:hover {
+    background: #4752c4;
+    transform: translateY(-1px);
+}
+
+.avatar-input {
+    display: none;
+}
+
+.form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #b9bbbe;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea {
+    background: #40444b;
+    border: 1px solid #202225;
+    border-radius: 6px;
+    padding: 12px 16px;
+    color: #dcddde;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #5865f2;
+    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.3);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #72767d;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+}
+
+.char-counter {
+    text-align: right;
+    color: #72767d;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+.char-counter.warning {
+    color: #faa61a;
+}
+
+.char-counter.error {
+    color: #ed4245;
+}
+
+.field-errors {
+    color: #ed4245;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+.field-errors .error {
+    display: block;
+    background: rgba(237, 66, 69, 0.1);
+    padding: 5px 10px;
+    border-radius: 4px;
+    border-left: 3px solid #ed4245;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-save {
+    background: #3ba55c;
+    color: #fff;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+}
+
+.btn-save:hover {
+    background: #2d8c4d;
+    transform: translateY(-1px);
+}
+
+.btn-save:active {
+    transform: translateY(0);
+}
+
+.btn-cancel {
+    background: #4f545c;
+    color: #fff;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+}
+
+.btn-cancel:hover {
+    background: #36393f;
+    transform: translateY(-1px);
+}
+
+/* Стили для состояний полей ввода */
+.form-group input:invalid,
+.form-group textarea:invalid {
+    border-color: #ed4245;
+}
+
+.form-group input:valid:not(:placeholder-shown),
+.form-group textarea:valid:not(:placeholder-shown) {
+    border-color: #3ba55c;
+}
+
+/* Анимация загрузки */
+.btn-save.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-save.loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 20px;
+    }
+    
+    .avatar-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-save,
+    .btn-cancel {
+        min-width: auto;
+        flex: none;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+        padding: 10px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-container {
+        padding: 15px;
+    }
+    
+    .avatar-image {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .btn-avatar-upload {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-save,
+    .btn-cancel {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Дополнительные улучшения для UX */
+.form-group input:disabled,
+.form-group textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-save:disabled {
+    background: #4f545c;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-save:disabled:hover {
+    background: #4f545c;
+    transform: none;
+}
+
+/* Стили для превью аватарки при наведении */
+.avatar-container:hover .avatar-image {
+    border-color: #4752c4;
+    transform: scale(1.05);
+}
+
+/* Плавные переходы */
+.profile-form * {
+    transition: all 0.2s ease;
+}

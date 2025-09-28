@@ -22,7 +22,7 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('EclipseUser/', include("EclipseUser.urls", namespace="EclipseUser")),
-    path('EclipseServers/', include("EclipseServers.urls", namespace="EclipseServers")),
+    path('', include("EclipseServers.urls", namespace="EclipseServers")),
 ]
 
 if settings.DEBUG:

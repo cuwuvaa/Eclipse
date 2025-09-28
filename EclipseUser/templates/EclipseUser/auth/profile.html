@@ -1,4 +1,4 @@
-{% extends "EclipseChat/index.html" %}
+{% extends 'EclipseServers/base/index.html' %}
 {% load static %}
 
 {% block title %}Профиль пользователя{% endblock %}
@@ -21,16 +21,6 @@
                 <div class="info-group">
                     <label class="info-label">Имя пользователя:</label>
                     <span class="info-value">{{ user.get_display_name }}</span>
-                </div>
-
-                <div class="info-group">
-                    <label class="info-label">Email:</label>
-                    <span class="info-value">{{ user.email }}</span>
-                    {% if user.is_verified %}
-                        <span class="verified-badge">✓ Подтвержден</span>
-                    {% else %}
-                        <span class="unverified-badge">⚠ Не подтвержден</span>
-                    {% endif %}
                 </div>
 
                 <div class="info-group">

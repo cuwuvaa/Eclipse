@@ -2,12 +2,12 @@ from django.db import models
 from EclipseUser.models import CustomUser as User
 
 
-class VoiceServerManager(models.Manager):
+class ServerManager(models.Manager):
     def current_user(self, user):
         return self.filter(user=user)
         
 #todo: сделать закрытые серверы
-class VoiceServer(models.Model):
+class Server(models.Model):
     """
     Сервер - аналогично Discord серверу
     """
@@ -22,13 +22,13 @@ class VoiceServer(models.Model):
     members = models.ManyToManyField(
         User, 
         through='ServerMember',
-        related_name='voice_servers'
+        related_name='servers'
     )
     bio = models.CharField(max_length=500, verbose_name="О сервере")
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = models.Manager()
-    user_objects = VoiceServerManager()
+    user_objects = ServerManager()
     
     def __str__(self):
         return self.name
@@ -42,7 +42,7 @@ class ServerMember(models.Model):
     Члены сервера с ролями
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    server = models.ForeignKey(VoiceServer, on_delete=models.CASCADE)
+    server = models.ForeignKey(Server, on_delete=models.CASCADE)
     ROLE_CHOICES = [ #todo: добавить функционал для этих ролей
         ('owner', 'Владелец'),
         ('admin', 'Администратор'),
@@ -53,3 +53,13 @@ class ServerMember(models.Model):
     
     class Meta:
         unique_together = ('user', 'server')
+
+class ServerMessage(models.Model):
+    server = models.ForeignKey(Server, on_delete=models.CASCADE)
+    sender = models.ForeignKey(ServerMember, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    edited = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']

@@ -11,7 +11,7 @@ def register_view(request):
     Регистрация нового пользователя
     """
     if request.user.is_authenticated:
-        return redirect('EclipseChat:main')
+        return redirect('EclipseUser:profile')
     
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)

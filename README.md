@@ -1,7 +1,5 @@
 # Eclipse - Real-time Chat and Voice Communication Platform
 
-![Eclipse Logo](https://your-logo-url.com/logo.png)  <!-- Replace with your logo URL -->
-
 Eclipse is a real-time chat and voice communication platform built with Django, Django Channels, and WebRTC. It allows users to create servers, join them, and communicate with other users through text chat and voice channels.
 
 ## Features
@@ -53,14 +51,6 @@ To get a local copy up and running, follow these simple steps.
     ```sh
     python manage.py runserver
     ```
-
-## Screenshots
-
-| Server View | Chat View |
-| :---: | :---: |
-| ![Server View](https://your-screenshot-url.com/server-view.png) | ![Chat View](https://your-screenshot-url.com/chat-view.png) |
-
-<!-- Replace with your screenshot URLs -->
 
 ## Contributing
 

@@ -1,21 +1,13 @@
-const call_btn = document.getElementById("start_call")
+const connectBtn = document.getElementById("connectBtn")
+const disconnectBtn = document.getElementById("disconnectBtn")
 const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 const audiocontainer = document.getElementById("audiocontainer");
-
-var userid;
-var voiceSocket; 
-var peers = {}; // хранение всех пиров
-var localStream = new MediaStream();
-
-const constraints = {
-    'video': false,
-    'audio': true
-};
-
-const localAudio = document.getElementById("myaudio");
+var voiceSocket; // Вынесем WebSocket в глобальную переменную
+var peers = {}; // Объект для хранения всех пиров
 
 // Функция для отправки сообщений через WebSocket
 function sendVoiceSocket(action, message){
+       console.log('sent:', action, " with message:", message);
     voiceSocket.send(JSON.stringify({
         "peer": userid,
         "action": action,
@@ -23,15 +15,33 @@ function sendVoiceSocket(action, message){
     }));
 }
 
+function renderVoiceUsers(users) {
+    const voiceUsersDiv = document.getElementById('voice_users');
+    voiceUsersDiv.innerHTML = '';
+    for (const user of users) {
+        const userDiv = document.createElement('div');
+        userDiv.classList.add('voice-user');
+        userDiv.innerHTML = `
+            <img src="${user.avatar_url}" alt="${user.username}'s avatar">
+            <span>${user.username}</span>
+        `;
+        voiceUsersDiv.appendChild(userDiv);
+    }
+}
+
 function websocketOnMessage(event){
     var parsedData = JSON.parse(event.data)
     var user = parsedData['peer']
     var action = parsedData['action']
 
+    if (action === 'voice_users') {
+        renderVoiceUsers(parsedData.users);
+        return;
+    }
+
     if (userid == user){
         return; // Игнорируем собственные сообщения
     }
-
     var receiver_channel_name = parsedData['message']['receiver_channel_name']
 
     if (action == "new-peer") {
@@ -72,6 +82,7 @@ function websocketOnMessage(event){
                     console.error("Error adding ICE candidate:", error);
                 });
         }
+        console.log(peers)
         return;
     }
 }
@@ -84,6 +95,7 @@ function createOffer(user, receiver_channel_name) {
     });
     
     peers[user] = peer; // Сохраняем peer в объект peers
+    console.log("PEER SAVED: ", peers[user])
     addLocalTracks(peer);
     setupPeerConnection(peer, user); // Настраиваем обработчики событий
     
@@ -114,6 +126,7 @@ function createAnswer(user, offer, receiver_channel_name) {
     });
     
     peers[user] = peer; // Сохраняем peer в объект peers
+    console.log("PEER SAVED: ", peers[user])
     addLocalTracks(peer);
     setupPeerConnection(peer, user); // Настраиваем обработчики событий
     
@@ -168,11 +181,10 @@ function addLocalTracks(connection){
     });
 }
 
-call_btn.addEventListener("click", event => {
-    userid = document.getElementById("in_userid").value;
+connectBtn.addEventListener("click", event => {
     console.log(userid);
     
-    voiceSocket = new WebSocket(protocol + window.location.host + '/ws/chat/');
+    voiceSocket = new WebSocket(protocol + window.location.host + `/ws/voicechat/${serverId}/`);
     
     voiceSocket.addEventListener('open', () => {
         sendVoiceSocket('new-peer', {});
@@ -185,8 +197,25 @@ call_btn.addEventListener("click", event => {
         Object.values(peers).forEach(peer => peer.close());
         peers = {};
     });
+
+    connectBtn.style.display = 'none';
+    disconnectBtn.style.display = 'block';
 });
 
+disconnectBtn.addEventListener("click", event => {
+    voiceSocket.close();
+    connectBtn.style.display = 'block';
+    disconnectBtn.style.display = 'none';
+});
+
+var localStream = new MediaStream();
+
+const constraints = {
+    'video': false,
+    'audio': true
+};
+
+const localAudio = document.getElementById("myaudio");
 
 var userMedia = navigator.mediaDevices.getUserMedia(constraints)
     .then(stream => {

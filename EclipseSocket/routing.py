@@ -3,6 +3,5 @@ from EclipseSocket import consumers
 
 
 ws_urlpatterns = [
-    path("ws/server/<int:server_id>/", consumers.ChatConsumer.as_asgi()),
-    path("ws/voicechat/<int:server_id>/", consumers.VoiceChatConsumer.as_asgi())
+    path("ws/server/<int:server_id>/", consumers.ChatConsumer.as_asgi())
 ]

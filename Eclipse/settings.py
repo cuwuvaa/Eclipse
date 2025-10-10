@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'daphne',
     'django.contrib.staticfiles',
     'channels',
+    'rest_framework',
 
     'EclipseUser',
     'EclipseServers',

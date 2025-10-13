@@ -63,7 +63,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({"action":"listusers", "users":connected_users}))
         
         if (data['action'] == "disconnect_voice"):
-            del connected_users[self.user["id"]]
+            connected_users.pop(self.user["id"])
             print(connected_users)
 
             print("-----sending data to group-------")

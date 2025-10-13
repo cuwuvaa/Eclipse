@@ -1,6 +1,6 @@
 const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 const ws = new WebSocket(protocol + window.location.host + `/ws/server/${serverId}/`);
-let peerConnection;
+
 let peers = new Map()
 
 
@@ -107,9 +107,8 @@ let addAudioPeer = (userId) =>
 }
 
 let createPeerConnection = async (userId) => {
-    console.log("peers before: ",peers)
     peerConnection = new RTCPeerConnection(servers);
-    console.log("created peer connection")
+    console.log("created peer connection with ", userId)
     remoteStream = new MediaStream();
     peers.set(userId,peerConnection);
     console.log("peers before: ",peers)

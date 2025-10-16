@@ -2,7 +2,7 @@ const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 const ws = new WebSocket(protocol + window.location.host + `/ws/server/${serverId}/`);
 
 let peers = new Map()
-
+let connected_users = [];
 
 audioContainer = document.getElementById("connected_audio")
 btnConnect = document.getElementById("connect_audio")
@@ -17,6 +17,11 @@ const servers = {
     iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun2.l.google.com:19302" },
+    {
+        urls: "turn:openrelay.metered.ca:80",
+        username: "openrelayproject",
+        credential: "openrelayproject"
+    }
     ]
 }
 
@@ -28,15 +33,19 @@ function sendActionSocket(action,message)
     }))
 }
 
-ws.onmessage = function(event) {
+ws.onmessage = async function(event) {
     const data = JSON.parse(event.data);
     console.log(data)
     if (data.type === 'connection_established') {
         mychannel = data.channel_name;
         sendActionSocket("render",{})
-            }
+    }
     if (data.action == "new_offer")
     {
+        if (!connected_users.includes(data.userid)) {
+            connected_users.push(data.userid);
+        }
+        addAudioPeer(data.userid)
         console.log("new connection");
         console.log("connection data: ", data);
         createAnswer(data.userid,data.sdp)
@@ -44,18 +53,15 @@ ws.onmessage = function(event) {
 
     if (data.action == "new_answer")
     {
-        console.log("answer from user ", data.userid);
-        peerConnection.setRemoteDescription(data.sdp);
-        peers.set(data.userid, peerConnection);
+        peers.get(data.userid).setRemoteDescription(data.sdp)
+
     }
-    if (data.action == "ice")
-    {
-        console.log("new icecandidate: ", data.ice)
-        peerConnection.addIceCandidate(data.ice)
+     if (data.action == "ice") {
+        peers.get(data.userid).addIceCandidate(data.ice)
     }
     if (data.action == "listusers")
     {
-        let connected_users = Object.keys(data.users)
+        connected_users = Object.keys(data.users)
         connected_users.forEach(element => {
             addAudioPeer(element);
         });
@@ -67,22 +73,35 @@ ws.onmessage = function(event) {
         document.getElementById(`div_user${data.userid}`).remove();
         console.log(peers);
     }
+
+    if (data.action == "user_connect")
+    {
+        connected_users.push(data.userid)
+    }
+
     if (data.action == "background")
     {
         if (data.task == "connection")
         {
             addAudioPeer(data.userid)
+            if (!connected_users.includes(data.userid)) {
+                connected_users.push(data.userid);
+            }
         }
         if (data.task == "disconnection")
         {
-            document.getElementById(`div_user${data.userid}`).remove();
+            removeAudioElement(data.userid);
+            const index = connected_users.indexOf(data.userid);
+            if (index > -1) {
+                connected_users.splice(index, 1);
+            }
         }
     }
 
 };
 
 const constraints = {
-    'video': false,
+    'video': true,
     'audio': true
 };
 
@@ -91,89 +110,150 @@ let init = async () =>{
     localStream = await navigator.mediaDevices.getUserMedia(constraints);
 }
 
-let addAudioPeer = (userId) =>
-{
-    const userWrapper = document.createElement("div")
+
+let addAudioPeer = (userId) => {
+    if (document.getElementById(`div_user${userId}`)) {
+        return; // Уже существует
+    }
+    
+    const userWrapper = document.createElement("div");
     userWrapper.id = `div_user${userId}`;
-    const userAudio = document.createElement("audio")
+    const userAudio = document.createElement("video");
     userAudio.id = `audio_user${userId}`;
-    userAudio.playsinline = true;
+    userAudio.playsInline = true;
     userAudio.autoplay = true;
     userAudio.muted = false;
-    userWrapper.innerText += `${userId}`; 
+    userWrapper.innerText += `User ${userId}`; 
     userWrapper.appendChild(userAudio);
-    audiodiv = document.getElementById("connected_audio")
-    audiodiv.appendChild(userWrapper);
+    audioContainer.appendChild(userWrapper);
+}
+
+let removeAudioElement = (userId) => {
+    const element = document.getElementById(`div_user${userId}`);
+    if (element) {
+        element.remove();
+    }
 }
 
 let createPeerConnection = async (userId) => {
-    peerConnection = new RTCPeerConnection(servers);
-    console.log("created peer connection with ", userId)
-    remoteStream = new MediaStream();
-    peers.set(userId,peerConnection);
-    console.log("peers before: ",peers)
-    await addAudioPeer(userId);
-    document.getElementById(`audio_user${userId}`).srcObject = remoteStream;
-
+    const peerConnection = new RTCPeerConnection(servers);
+    console.log(`Created peerConnection with ID: ${peerConnection._id} for user: ${userId}`);
+    
+    // Создаем отдельный remoteStream для каждого пользователя
+    const remoteStream = new MediaStream();
+    
+    // Добавляем локальные треки
     localStream.getTracks().forEach(track => {
-        peers.get(userId).addTrack(track, localStream);
+        peerConnection.addTrack(track, localStream);
     });
-    
-
-    peers.get(userId).ontrack = (event) =>{
-        event.streams[0].getTracks().forEach(track =>{
+    document.getElementById(`audio_user${userId}`).srcObject = remoteStream;
+    // Обрабатываем удаленные треки
+    peerConnection.ontrack = (event) => {
+        console.log("Received remote track from:", userId);
+        event.streams[0].getTracks().forEach(track => {
             remoteStream.addTrack(track);
-        })
-    }
+        });
 
-    await console.log("ice candidates section:")
-    peers.get(userId).onicecandidate = async (event) => {
-        if (event.candidate)
-            {
-                console.log(event.candidate);
-                sendActionSocket("ice",event.candidate)
-            }
-    }
+    };
     
+    // Обрабатываем ICE кандидаты
+    peerConnection.onicecandidate = async (event) => {
+        if (event.candidate) {
+            console.log("Sending ICE candidate to:", userId);
+            sendActionSocket("ice", event.candidate);
+        }
+    };
+    peers.set(userId, peerConnection);
 }
 
 let createOffer = async (userId) => {
-    await createPeerConnection(userId);
-    let offer = await peers.get(userId).createOffer()
-    await peers.get(userId).setLocalDescription(offer);
-    await console.log(offer);
-    sendActionSocket("offer",{"sdp":offer})
-
+    try {
+        console.log("Creating offer for:", userId);
+        await createPeerConnection(userId);
+        const peerConnection = await peers.get(userId)
+        console.log("Peer connection object in createOffer:", peerConnection);
+        
+        const offer = await peerConnection.createOffer();
+        console.log("Offer created:", offer); // Added log
+        try {
+            await peerConnection.setLocalDescription(offer);
+        } catch (e) {
+            console.error("Error setting local description for offer:", e);
+        }
+        
+        console.log("Sending offer to:", userId);
+        sendActionSocket("offer", {
+            "sdp": offer,
+            "to": userId  // Важно указать кому отправляем
+        });
+        
+    } catch (error) {
+        console.error("Error creating offer:", error);
+    }
 }
 
-let createAnswer = async (userId, offer) =>{
-    await createPeerConnection(userId);
-    await peers.get(userId).setRemoteDescription(offer);
-    let answer = await peers.get(userId).createAnswer();
-    await console.log("CREATING ANSWER" ,answer);
-    await peers.get(userId).setLocalDescription(answer);
-    sendActionSocket("answer",{"sdp":answer, "to":userId})
+let createAnswer = async (userId, offer) => {
+    try {
+        console.log("Creating answer for:", userId);
+        createPeerConnection(userId);
+        const peerConnection = peers.get(userId);
+
+        console.log("Received offer for answer:", offer); // Added log
+        try {
+            await peerConnection.setRemoteDescription(offer);
+            console.log("Remote description set for answer.");
+        } catch (e) {
+            console.error("Error setting remote description for answer:", e);
+        }
+        const answer = await peerConnection.createAnswer();
+        console.log("Answer created:", answer); // Added log
+        try {
+            await peerConnection.setLocalDescription(answer);
+        } catch (e) {
+            console.error("Error setting local description for answer:", e);
+        }
+        
+        console.log("Sending answer to:", userId);
+        sendActionSocket("answer", {
+            "sdp": answer, 
+            "to": userId  // Важно указать кому отправляем
+        });
+        
+    } catch (error) {
+        console.error("Error creating answer:", error);
+    }
 }
 
-let user_disconnect = (userId) =>
-{
-    console.log("somebody leaves! it's ",userId);
-    console.log("all pears: ",peers);
-    peers.get(userId).close()
-    peers.delete(userId);
-    console.log("closed peer connection with user ", userId);
+let user_disconnect = (userId) => {
+    console.log("User disconnected:", userId);
+    if (peers.has(userId)) {
+        peers.get(userId).close();
+        peers.delete(userId);
+        console.log("Closed peer connection with user:", userId);
+    }
 }
-
 
 
 btnConnect.addEventListener('click', function(){
-    createOffer(myuserId);
+    if (connected_users.length == 0)
+    {
+        sendActionSocket("start_voice", {})
+    }
+    else
+    {
+    connected_users.forEach(userId => {
+                addAudioPeer(userId);
+                createOffer(userId); // Создаем офер для всех существующих пользователей
+        })
+    }
+    addAudioPeer(myuserId);
     btnConnect.disabled = true;
     btnDisconnect.disabled = false;
 })
 
 btnDisconnect.addEventListener('click', function(){
     console.log("you pushed disconnect")
+    removeAudioElement(myuserId)
     sendActionSocket("disconnect_voice",{});
     for (let user of peers.keys()) {
         if (user != myuserId)

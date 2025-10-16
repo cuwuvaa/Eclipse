@@ -35,19 +35,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        if (data['action'] == "offer"):
+        if (data['action'] == "start_voice"):
             connected_users[self.user["id"]] = self.channel_name
-            print(connected_users)
-
-            print("-----sending data to group-------")
+            print(f"user {connected_users[self.user["id"]]} started voice call")
             await self.channel_layer.group_send(self.group_name,{
-                "type":"send_sdp",
-                "type_action":"new_offer",
-                "sdp":data['message']['sdp'],
+                "type":"send_background",
                 "userid":self.user["id"]
             })
+
+        if (data['action'] == "offer"):
+            connected_users[int(self.user["id"])] = str(self.channel_name)
+            print("connected users: ", connected_users)
+            print(f"user {self.user["id"]} connected voice call")
+            destination = int(data["message"]["to"])
+            print(f"sending offer to user ID:{destination} CHANNEL:{connected_users.get(destination)}")
+            destination_channel = connected_users.get(destination)
+            if destination_channel:
+                await self.channel_layer.send(destination_channel,{
+                    "type":"send_sdp",
+                    "type_action":"new_offer",
+                    "sdp":data['message']['sdp'],
+                    "userid":self.user["id"]
+                })
+            else:
+                print(f"Error: Destination user {destination} not found.")
         if (data['action'] == "answer"):
-            await self.channel_layer.send(connected_users[data['message']['to']],{
+            destination = data["message"]["to"]
+            print("sending answer to ", destination)
+            await self.channel_layer.send(connected_users.get(destination),{
                 "type":"send_sdp",
                 "type_action":"new_answer",
                 "sdp":data['message']['sdp'],
@@ -63,6 +78,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({"action":"listusers", "users":connected_users}))
         
         if (data['action'] == "disconnect_voice"):
+            print(f"user {self.user["id"]} disconnecting")
             connected_users.pop(self.user["id"])
             print(connected_users)
 
@@ -95,6 +111,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
         elif not(self.channel_name in connected_users.values()) and self.channel_name != connected_users.get(event["userid"]):
             await self.send(json.dumps({
+                "action":"background",
+                "task":"connection",
+                "userid":event["userid"]
+            })) 
+
+    async def send_background(self,event):
+        await self.send(json.dumps({
                 "action":"background",
                 "task":"connection",
                 "userid":event["userid"]

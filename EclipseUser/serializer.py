@@ -5,3 +5,4 @@ class EclipseUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'username', 'avatar']
+    

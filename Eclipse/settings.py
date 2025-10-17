@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
     'EclipseUser',
     'EclipseServers',
+    'api',
 ]
 
 #для продакшена изменить на редис

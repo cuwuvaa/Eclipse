@@ -59,6 +59,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 })
             else:
                 print(f"Error: Destination user {destination} not found.")
+            
+            await self.channel_layer.group_send(self.group_name,{
+                "type":"send_background",
+                "userid":self.user["id"]
+            })
         if (data['action'] == "answer"):
             destination = data["message"]["to"]
             print("sending answer to ", destination)
@@ -69,17 +74,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "userid":self.user["id"]
             })
         if (data['action'] == "ice"):
-            await self.channel_layer.group_send(self.group_name,{
-                "type":"send_ice",
-                "ice":data["message"],
-                "userid":self.user["id"]
-            })
+            try:
+                destination = int(data["message"]["to"])
+                print(f"sending ICE to user ID:{destination} CHANNEL:{connected_users.get(destination)}")
+                destination_channel = connected_users.get(destination)
+                await self.channel_layer.send(destination_channel,{
+                    "type":"send_ice",
+                    "ice":data["message"]["candidate"],
+                    "userid":self.user["id"]
+                })
+            except:
+                print("skip sending...")
         if (data['action'] == "render"):
             await self.send(text_data=json.dumps({"action":"listusers", "users":connected_users}))
         
         if (data['action'] == "disconnect_voice"):
             print(f"user {self.user["id"]} disconnecting")
-            connected_users.pop(self.user["id"])
+            connected_users.pop(int(self.user["id"]))
             print(connected_users)
 
             print("-----sending data to group-------")
@@ -109,19 +120,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "sdp":event["sdp"],
                 "userid":event["userid"]
             }))
-        elif not(self.channel_name in connected_users.values()) and self.channel_name != connected_users.get(event["userid"]):
-            await self.send(json.dumps({
-                "action":"background",
-                "task":"connection",
-                "userid":event["userid"]
-            })) 
+
 
     async def send_background(self,event):
         await self.send(json.dumps({
                 "action":"background",
                 "task":"connection",
                 "userid":event["userid"]
-            }))     
+            }))   
 
     async def send_ice(self,event):
         if self.channel_name != connected_users.get(event["userid"]) and self.channel_name in connected_users.values():
@@ -130,3 +136,4 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "ice":event["ice"],
                 "userid":event["userid"]
             }))
+

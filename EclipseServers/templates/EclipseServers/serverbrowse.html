@@ -21,9 +21,9 @@
     <div class="servers-grid">
         {% for server in servers %}
         <div class="server-card">
-            <div class="server-image">
+            {% comment %} <div class="server-image">
                 <img src="{{ server.image.url }}" alt="{{ server.name }}">
-            </div>
+            </div> {% endcomment %}
             <div class="server-info">
                 <h3 class="server-name">{{ server.name }}</h3>
                 <p class="server-description">{{ server.bio|truncatewords:20 }}</p>

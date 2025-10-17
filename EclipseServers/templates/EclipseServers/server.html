@@ -2,16 +2,39 @@
 {% load static %}
 
 {% block title %}{{ server.name }}{% endblock %}
-{% comment %} {% block link %} <link rel="stylesheet" href="{% static 'EclipseServers/css/current_server.css' %}"> {% endblock link %} {% endcomment %}
+{% block link %} <link rel="stylesheet" href="{% static 'EclipseServers/css/current_server.css' %}"> {% endblock link %}
+
 {% block content %}
-<h1>{{server.name}}</h1>
-<button id="connect_audio">Connect</button>
-<button id="disconnect_audio">Disconnect</button>
-<div id="connected_audio">
+<div class="server-container">
+    <header class="server-header">
+        <h1>{{server.name}}</h1>
+        <div class="connection-controls">
+            <button id="connect_audio" class="btn btn-connect">Connect to Voice</button>
+            <button id="disconnect_audio" class="btn btn-disconnect" disabled>Disconnect</button>
+        </div>
+    </header>
+
+    <main class="server-main">
+        <div class="user-list-container">
+            <h2>Connected Users</h2>
+            <div id="user_list" class="user-grid">
+                <!-- User cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+
+        <div id="connected_audio" class="voice-chat-container">
+            <!-- Audio/video elements will be inserted here -->
+        </div>
+    </main>
 </div>
+
 <script>
     const serverId = {{ server.id }};
-    const myuserId = {{user.id}};
+    const myuserId = {{ user.id }};
+    const myUsername = "{{ user.username }}";
+    const myAvatar = "{{ user.avatar.url }}";
 </script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{% static 'js/audiowave.js' %}"></script>
 <script src="{% static 'js/servercall.js'%}"></script>
 {% endblock %}

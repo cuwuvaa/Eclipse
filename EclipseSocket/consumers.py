@@ -1,170 +1,182 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from EclipseServers import models
+from EclipseUser.serializer import EclipseUserSerializer
+from EclipseServers.serializer import ServerMessageSerializer
 from collections import defaultdict
 import json
+# from .redis import redis_service
+# import logging
 
-active_connections = {}
+
+connected_users = defaultdict()
 
 class ChatConsumer(AsyncWebsocketConsumer):
-
     async def connect(self):
         self.server_id = self.scope['url_route']['kwargs']['server_id']
-        self.group_name = f'chat_{self.server_id}'
-
-        # Вступаем в группу канала
+        self.user = EclipseUserSerializer(self.scope['user']).data
+        self.group_name = f'server_{self.server_id}'
+        print(f"{self.user['username']} connected")
         await self.channel_layer.group_add(
             self.group_name,
             self.channel_name
         )
         await self.accept()
-
-        if self.group_name not in active_connections:
-            active_connections[self.group_name] = set()
-        active_connections[self.group_name].add(self.channel_name)
+        await self.send(text_data=json.dumps({
+            'type': 'connection_established',
+            'channel_name': self.channel_name
+        }))
 
     async def disconnect(self, close_code):
-        # Покидаем группу
-        await self.send(json.dumps({'message':f'Successfully disconnected from group: {self.group_name}'}))
+        if self.user["id"] in connected_users:
+            del connected_users[self.user["id"]]
+            await self.channel_layer.group_send(self.group_name, {
+                "type": "user_disconnect",
+                "type_action": "user_disconnect",
+                "userid": self.user["id"]
+            })
+
         await self.channel_layer.group_discard(
             self.group_name,
             self.channel_name
         )
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        action = text_data_json['action']
-        if (action == "send_chatmsg"):
-            await self.handle_chat_message(text_data_json["message"])
-        elif (action == "voice_connect"):
-            await self.handle_voice_connection(text_data_json["message"])
-        elif (action == "voice_disconnect"):
-            await self.handle_voice_disconnection(text_data_json["message"])
-    
-    async def handle_chat_message(self, message_content):
-        message, sender_username, sender_id, sender = await self.create_message_async(message_content)
-        
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                'type': 'chat_message',
-                'id': message.id,
-                'content': message.content,
-                'sender': sender_username,
-                'avatar_url': sender.avatar.url,
-                'sender_id': sender_id,
-                'timestamp': message.timestamp.isoformat()
-            }
-        )
+        data = json.loads(text_data)
+        action = data.get('action')
+        message = data.get('message', {})
+        user_id = str(self.user["id"])
 
-    @database_sync_to_async
-    def serialize_user(self, user, server_id):
-        server = models.Server.objects.get(id=server_id)
-        connected_user = models.ServerMember.objects.select_related('user').get(user=user, server=server)
-        return connected_user.user
+        try:
+            server_users = connected_users
+            print("server_users: ", server_users)
+            print("connected_users: ", connected_users)
+        except:
+            print("no one connected, server_users array is empty")
 
-    async def handle_voice_connection(self,event):
-        connected_user = await self.serialize_user(self.scope['user'], server_id=self.server_id)
-        print(f"{connected_user} connected to group: {self.group_name}")
-        await self.channel_layer.group_send(self.group_name,
-            {
-            'type': 'voice_connection',
-            'user': connected_user.username,
-            'avatar_url': connected_user.avatar.url,
-            'user_id': connected_user.id,
+        if action == "start_voice":
+            connected_users[user_id] = self.channel_name
+            print(connected_users)
+            await self.channel_layer.group_send(self.group_name, {
+                "type": "send_background",
+                "userid": user_id,
+                "sender_channel": self.channel_name
             })
 
-    async def handle_voice_disconnection(self,event):
-        disconnected_user = await self.serialize_user(self.scope['user'], server_id=self.server_id)
-        print(f"{disconnected_user} disconnected from group: {self.group_name}")
-        await self.channel_layer.group_send(self.group_name,
-            {
-            'type': 'voice_disconnection',
-            'user': disconnected_user.username,
-            'avatar_url': disconnected_user.avatar.url,
-            'user_id': disconnected_user.id,
+        elif action == "offer":
+            connected_users[user_id] = self.channel_name
+            print(connected_users)
+            destination_id = message.get("to")
+            destination_channel = connected_users[str(destination_id)]
+
+            if destination_channel:
+                await self.channel_layer.send(destination_channel, {
+                    "type": "send_sdp",
+                    "type_action": "new_offer",
+                    "sdp": message.get('sdp'),
+                    "userid": user_id
+                })
+            
+            await self.channel_layer.group_send(self.group_name, {
+                "type": "send_background",
+                "userid": user_id,
+                "sender_channel": self.channel_name
             })
 
+        elif action == "answer":
+            destination_id = message.get("to")
+            destination_channel = connected_users[str(destination_id)]
+            if destination_channel:
+                await self.channel_layer.send(destination_channel, {
+                    "type": "send_sdp",
+                    "type_action": "new_answer",
+                    "sdp": message.get('sdp'),
+                    "userid": user_id
+                })
+
+        elif action == "ice":
+            destination_id = message.get("to")
+            destination_channel = connected_users[str(destination_id)]
+            if destination_channel:
+                await self.channel_layer.send(destination_channel, {
+                    "type": "send_ice",
+                    "ice": message.get("candidate"),
+                    "userid": user_id
+                })
+
+        elif action == "render":
+            try: #если голосовой канал пуст
+                users = {uid: chan for uid, chan in connected_users.items() if uid != user_id}
+            except:
+                users = {}
+            await self.send(text_data=json.dumps({
+                "action": "listusers",
+                "users": users,
+            }))
+
+        elif action == "disconnect_voice":
+            if user_id in connected_users:
+                del connected_users[user_id]
+            
+            await self.channel_layer.group_send(self.group_name, {
+                "type": "user_disconnect",
+                "type_action": "user_disconnect",
+                "userid": user_id,
+                "sender_channel": self.channel_name
+            })
+        elif action == "user_message":
+            print("new msg")
+            usermsg = await self.create_message(message, user_id)
+            await self.channel_layer.group_send(self.group_name, {
+                "type": "user_message",
+                "action":"new_message",
+                "message":ServerMessageSerializer(usermsg).data
+            })
+
+
     @database_sync_to_async
-    def create_message_async(self, content):
+    def create_message(self, content, user_id):
         server = models.Server.objects.get(id=self.server_id)
-        server_member = models.ServerMember.objects.select_related('user').get(user=self.scope['user'], server=server)
-        message = models.ServerMessage.objects.create(
-            server=server,
-            sender=server_member,
-            content=content
-        )
-        return message, server_member.user.username, server_member.user.id, server_member.user
-    
-    async def chat_message(self, event):
-        await self.send(text_data=json.dumps({
-            'type': 'chat_message',
-            'id': event['id'],
-            'content': event['content'],
-            'sender': event['sender'],
-            'avatar_url': event['avatar_url'],
-            'sender_id': event['sender_id'],
-            'timestamp': event['timestamp']
-        }))
-    
-    async def voice_connection(self,event):
-        await self.send(text_data=json.dumps({
-            'type': 'voice_connection',
-            'user': event['user'],
-            'avatar_url': event['avatar_url'],
-            'user_id': event['user_id'],
+        sender = models.ServerMember.objects.get(user__id=user_id, server__id=self.server_id)
+        usermsg = models.ServerMessage.objects.create(server=server, sender=sender, content=content)
+        usermsg.save()
+        print(usermsg)
+        print(sender.user.avatar)
+        return usermsg
+
+    async def user_message(self,event):
+        await self.send(json.dumps({
+            "action": event["action"],
+            "usermsg":event["message"]
         }))
 
-    async def voice_disconnection(self,event):
-        await self.send(text_data=json.dumps({
-            'type': 'voice_disconnection',
-            'user': event['user'],
-            'avatar_url': event['avatar_url'],
-            'user_id': event['user_id'],
-        }))
-    
-    @database_sync_to_async
-    def get_online_users(self):
-        server = models.Server.objects.get(id=self.server_id)
-        online_members = models.ServerMember.objects.filter(server=server, user__is_online=True).select_related('user')
-        return [{"username": member.user.username, "id": member.user.id, "avatar_url": member.user.avatar.url} for member in online_members]
+    async def user_disconnect(self, event):
+        # Send disconnect message to clients in the group
+        if self.channel_name != event.get("sender_channel"):
+             await self.send(json.dumps({
+                "action": event["type_action"],
+                "userid": event["userid"]
+            }))
 
-
-class VoiceChatConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.group_name = f'chat_test'
-        await self.channel_layer.group_add(
-            self.group_name,
-            self.channel_name
-        )
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.group_name,
-            self.channel_name
-        )
-
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        action = text_data_json['action']
-        if ((action == 'new-offer') or (action == 'new-answer')):
-            receiver_channel_name = text_data_json['message']['receiver_channel_name']
-            text_data_json['message']['receiver_channel_name'] == self.channel_name
-            await self.channel_layer.send(receiver_channel_name,{
-                'type':'send.sdp',
-                'peer_data':text_data_json
-            })
-
-
-        text_data_json['message']['receiver_channel_name'] = self.channel_name
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                'type':'send.sdp',
-                'peer_data':text_data_json
-            }
-        )
     async def send_sdp(self, event):
-        await self.send(text_data=json.dumps(event['peer_data']))
+        await self.send(json.dumps({
+            "action": event["type_action"],
+            "sdp": event["sdp"],
+            "userid": event["userid"]
+        }))
+
+    async def send_background(self, event):
+        # уведомить всех о новом юзере
+        if self.channel_name != event.get("sender_channel"):
+            await self.send(json.dumps({
+                "action": "background",
+                "task": "connection",
+                "userid": event["userid"]
+            }))
+
+    async def send_ice(self, event):
+        await self.send(json.dumps({
+            "action": "ice",
+            "ice": event["ice"],
+            "userid": event["userid"]
+        }))

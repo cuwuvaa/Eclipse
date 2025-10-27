@@ -1,0 +1,131 @@
+{% extends 'EclipseServers/base/index.html' %}
+{% load static %}
+
+{% block title %}{{ server.name }}{% endblock %}
+{% block link %} <link rel="stylesheet" href="{% static 'EclipseServers/css/current_server.css' %}"> {% endblock link %}
+{% block content %}
+<div class="server-page">
+    <div id="server-sidebar" class="server-sidebar">
+        <div class="server-header">
+            <div style="display:flex;">
+                <img class="member-avatar" src="{{ server.image.url }}">
+                <h3 class="server-name">{{ server.name }}</h3>
+            </div>
+            <span class="server-label">Сервер</span>
+        </div>
+
+        <div class="server-info">
+            <h4 class="info-title">Информация о сервере</h4>
+            <p class="server-description">{{ server.bio }}</p>
+            <div class="server-stats">
+                <span class="stat">Участников: {{ server.members.count }}</span>
+            </div>
+        </div>
+        <div id="voice_users">
+
+        </div>
+        {% if server.owner == user %}
+        <a href="" class="edit-server-btn">
+            Редактировать сервер
+        </a>
+        {% endif %}
+        <button class="connect-btn" id="connectBtn">Подключиться</button>
+        <button class="connect-btn" id="disconnectBtn" style="display:none;">Отключиться</button>
+        <!--если подключился, то добавить пользователя в это окно (как пользоваель в дискорде - в одну строчку) (потом сделаю)-->
+    </div>
+
+    <!-- Основное содержимое -->
+    <div class="server-content">
+        <div class="content-header">
+            <div>
+                <h1 class="main-server-name">{{ server.name }}</h1>
+                <p class="main-server-description">{{ server.bio }}</p>
+                {% if user not in server.members.all %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <button class="edit-server-btn">Присоединиться</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Область чата -->
+        <div class="chat-section">
+            <div id="chat-container" class="chat-container">
+                <div class="chat-header">
+                    <h3 class="chat-title">Общий чат</h3>
+                    <span id="online-count" class="online-count">Онлайн: </span>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Сообщения будут загружаться здесь -->
+                    <div class="welcome-message">
+                        <p>Добро пожаловать в чат сервера <strong>{{ server.name }}</strong>!</p>
+                    </div>
+                    
+                {% for message in server_messages %}
+                    <div class="message">
+                        <img class="message-avatar" src="{{message.sender.user.avatar.url}}">
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-author">{{message.sender.user.username}}</span>
+                                <span class="message-time">{{message.timestamp}}</span>
+                            </div>
+                            <div class="message-text">
+                                {{message.content}}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+                
+                <div class="chat-input-container">
+                    <div class="input-wrapper">
+                            <input type="text" 
+                                   class="message-input" 
+                                   id="message-input" 
+                                   placeholder="Напишите сообщение..." 
+                                   maxlength="2000"
+                                   {% if user not in server.members.all %}disabled placeholder="Присоединитесь к серверу чтобы писать сообщения"{% endif %}>
+                            <button id="chat-message-submit" type="submit" 
+                                    class="send-button" 
+                                    {% if user not in server.members.all %}disabled{% endif %}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="server-members">
+            <h2 class="section-title">Участники сервера</h2>
+            
+            <div class="members-grid">
+                {% for member in server.members.all %}
+                <div class="member-card">
+                    <img class="member-avatar" src="{{ member.avatar.url }}">
+                    <div class="member-info">
+                        {% if member.id == user.id %}
+                        <h4 class="member-name">{{ member.username }} (you) </h4>
+                        {% else %}
+                        <h4 class="member-name">{{ member.username }}</h4>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <audio autoplay playsinline id="myaudio"></audio>
+    <div id="audiocontainer"></div>
+    <script>
+        const serverId = {{ server.id }};
+        const userid = {{user.id}};
+    </script>
+
+<script src="{% static "js/call.js" %}"></script>
+<script src={% static "js/server.js"%}></script>
+</div>
+{% endblock %}

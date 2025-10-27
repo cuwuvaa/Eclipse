@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('EclipseUser/', include("EclipseUser.urls", namespace="EclipseUser")),
     path('', include("EclipseServers.urls", namespace="EclipseServers")),
+    path('api/', include("api.urls", namespace="api")),
 ]
 
 if settings.DEBUG:

@@ -9,7 +9,7 @@ class ServerManager(models.Manager):
 #todo: сделать закрытые серверы
 class Server(models.Model):
     """
-    Сервер - аналогично Discord серверу
+    Сервер
     """
     name = models.CharField(max_length=100, verbose_name="Название сервера")
     image = models.ImageField(default="default_images/default_server.png")

@@ -6,26 +6,83 @@
 
 {% block content %}
 <div class="server-container">
-    <header class="server-header">
-        <h1>{{server.name}}</h1>
-        <div class="connection-controls">
-            <button id="connect_audio" class="btn btn-connect">Connect to Voice</button>
-            <button id="disconnect_audio" class="btn btn-disconnect" disabled>Disconnect</button>
-        </div>
-    </header>
-
-    <main class="server-main">
-        <div class="user-list-container">
-            <h2>Connected Users</h2>
-            <div id="user_list" class="user-grid">
-                <!-- User cards will be inserted here by JavaScript -->
+    <div class="server-layout">
+        <div class="users-panel">
+            <div class="panel-header">
+                <h3>Участники</h3>
+                <span class="member-count" id="member-count">0</span>
+            </div>
+            <div id="user_list" class="users-list">
             </div>
         </div>
 
-        <div id="connected_audio" class="voice-chat-container">
-            <!-- Audio/video elements will be inserted here -->
+        <div class="main-content">
+            <header class="server-header">
+                <div class="server-info">
+                    <h1>{{ server.name }}</h1>
+                    <span class="server-status">Todo: Онлайн</span>
+                </div>
+                <div class="connection-controls">
+                    <button id="connect_audio" class="btn btn-connect">
+                        <span>🔊</span>
+                        Присоединиться к голосовому каналу
+                    </button>
+                    <button id="disconnect_audio" class="btn btn-disconnect" disabled>
+                        <span>🔇</span>
+                        Покинуть канал
+                    </button>
+                </div>
+            </header>
+
+            <div id="connected_audio" class="voice-chat-container">
+                <div class="voice-placeholder">
+                    <div class="voice-icon">🎙️</div>
+                    <p>Голосовой канал активен</p>
+                    <span>Присоединитесь к разговору</span>
+                </div>
+            </div>
+
+            <div class="chat-container" id="chat-container">
+                <div class="chat-header" id="chat-header">
+                    <div class="chat-info">
+                        <span class="hashtag">#</span>
+                        <h2>Общий чат</h2>
+                    </div>
+                </div>
+
+                <div class="messages-list" id="messages-list">
+                    {% for message in server_messages %}
+                    <div class="message-wrapper">
+                        <div class="message-avatar-section">
+                            <div class="message-avatar-container">
+                                <img src="{{ message.sender.user.avatar.url }}" class="message-avatar" alt="Аватар" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9IiM3Mjg5ZGEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDExQzE0LjIwOTEgMTEgMTYgOS4yMDkxIDE2IDdDMTYgNC43OTA4NiAxNC4yMDkxIDMgMTIgM0M5Ljc5MDg2IDMgOCA0Ljc5MDg2IDggN0M4IDkuMjA5MTQgOS43OTA4NiAxMSAxMiAxMVoiIGZpbGw9IiNGRkYiLz4KPHBhdGggZD0iTTEyIDEzQzguMTMgMTMgNSAxNi4xMyA1IDIwQzUgMjAuNTUyMyA1LjQ0NzcyIDIxIDYgMjFIMThDMTguNTUyMyAyMSAxOSAyMC41NTIzIDE5IDIwQzE5IDE2LjEzIDE1Ljg3IDEzIDEyIDEzWiIgZmlsbD0iI0ZGRiIvPgo8L3N2Zz4KPC9zdmc+'">
+                            </div>
+                        </div>
+                        <div class="message-content-section">
+                            <div class="message-header">
+                                <span class="message-username">{{ message.sender.user.username }}</span>
+                                <span class="message-timestamp">{{ message.timestamp }}</span>
+                            </div>
+                            <div class="message-text">
+                                {{ message.content }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="message-input-container" id="message-input-container">
+                    <div class="input-wrapper">
+                        <img src="{{ user.avatar.url }}" class="message-input-avatar" id="current-user-avatar" alt="Мой аватар" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iMTYiIGZpbGw9IiM3Mjg5ZGEiLz4KPC9zdmc+'">             
+                        <textarea class="message-input-field" id="message-input-field" placeholder="Написать сообщение в #общий-чат..." rows="1"></textarea>
+                    </div>
+                    <button class="message-send-button" id="message-send-button">
+                        <span>➤</span>
+                    </button>
+                </div>
+            </div>
         </div>
-    </main>
+    </div>
 </div>
 
 <script>
@@ -36,5 +93,6 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="{% static 'js/audiowave.js' %}"></script>
+<script src="{% static 'js/messages.js'%}"></script>
 <script src="{% static 'js/servercall.js'%}"></script>
 {% endblock %}

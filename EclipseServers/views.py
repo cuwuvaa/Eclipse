@@ -17,7 +17,6 @@ def create(request):
             server.owner = request.user
             server.save()
             
-            # Добавляем владельца как участника сервера с ролью owner
             ServerMember.objects.create(
                 user=request.user,
                 server=server,

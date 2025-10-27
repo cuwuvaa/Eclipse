@@ -2,16 +2,17 @@ const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 const ws = new WebSocket(protocol + window.location.host + `/ws/server/${serverId}/`);
 
 
-let debug = false;
+let debug = true;
 
 let peers = new Map();
 let connected_users = [];
-let connectionStates = new Map(); // Трекинг состояний подключений
 
 audioContainer = document.getElementById("connected_audio");
 btnConnect = document.getElementById("connect_audio");
 btnDisconnect = document.getElementById("disconnect_audio");
 btnDisconnect.disabled = true;
+
+let btnSendMessage = document.getElementById("message-send-button")
 
 let mychannel;
 let localStream;
@@ -30,17 +31,34 @@ const servers = {
     ]
 };
 
-// Утилиты для работы с асинхронностью
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+let pendingIceCandidates = new Map(); // userId -> [candidates]
 
-const waitForCondition = async (condition, timeout = 5000, interval = 100) => {
-    const start = Date.now();
-    while (Date.now() - start < timeout) {
-        if (condition()) return true;
-        await delay(interval);
+async function handleIceCandidate(data) {
+    const peer = peers.get(data.userid);
+    
+    if (!peer) {
+        console.warn(`No peer for ICE candidate: ${data.userid}`);
+        return;
     }
-    throw new Error('Timeout waiting for condition');
-};
+    
+    // Если remoteDescription еще не установлен, буферизуем
+    if (!peer.remoteDescription) {
+        if (!pendingIceCandidates.has(data.userid)) {
+            pendingIceCandidates.set(data.userid, []);
+        }
+        pendingIceCandidates.get(data.userid).push(data.ice);
+        console.log(`Buffered ICE candidate for ${data.userid}`);
+        return;
+    }
+    
+    // Если remoteDescription установлен, сразу добавляем
+    try {
+        await peer.addIceCandidate(data.ice);
+    } catch (error) {
+        console.error('Error adding ICE candidate:', error);
+    }
+}
+
 
 function sendActionSocket(action, message) {
     if (ws.readyState === WebSocket.OPEN) {
@@ -60,6 +78,7 @@ ws.onmessage = async function(event) {
     try {
         if (data.type === 'connection_established') {
             mychannel = data.channel_name;
+            console.log("rendering")
             sendActionSocket("render", {});
         }
         
@@ -86,6 +105,10 @@ ws.onmessage = async function(event) {
         if (data.action == "background") {
             await handleBackgroundTask(data);
         }
+        if (data.action == "new_message")
+        {
+            displayMessage(data.usermsg);
+        }
     } catch (error) {
         console.error('Error handling message:', error);
     }
@@ -96,33 +119,10 @@ const constraints = {
     'audio': true
 };
 
-// Инициализация с гарантией однократного выполнения
 let init = async () => {
-    if (initializationPromise) {
-        return initializationPromise;
-    }
-    
-    initializationPromise = (async () => {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error("getUserMedia is not supported in this browser or context.");
-        }
+localStream = await navigator.mediaDevices.getUserMedia(constraints);
+}
 
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia(constraints);
-            isInitialized = true;
-            console.log("Media initialized successfully");
-            return localStream;
-        } catch (error) {
-            console.error("Error getting user media:", error);
-            initializationPromise = null;
-            throw error;
-        }
-    })();
-    
-    return initializationPromise;
-};
-
-// Обработчики сообщений с правильной асинхронностью
 async function handleNewOffer(data) {
     if (!connected_users.includes(data.userid)) {
         connected_users.push(data.userid);
@@ -131,8 +131,6 @@ async function handleNewOffer(data) {
     addAudioPeer(data.userid);
     console.log("New offer from:", data.userid);
     
-    // Ждем инициализации перед созданием ответа
-    await ensureInitialized();
     await createAnswer(data.userid, data.sdp);
 }
 
@@ -140,7 +138,6 @@ async function handleNewAnswer(data) {
     const peer = peers.get(data.userid);
     if (peer) {
         await peer.setRemoteDescription(data.sdp);
-        connectionStates.set(data.userid, 'connected');
     } else {
         console.warn(`No peer found for user ${data.userid} when setting answer`);
     }
@@ -155,7 +152,6 @@ async function handleIceCandidate(data) {
 
 async function handleUserList(data) {
     connected_users = Object.keys(data.users);
-    await ensureInitialized();
 
     for (const userId of connected_users) {
         addAudioPeer(userId);
@@ -164,6 +160,7 @@ async function handleUserList(data) {
 
 async function handleUserDisconnect(data) {
     await user_disconnect(data.userid);
+    console.log(`user ${data.userid} has been disconnected`)
     removeAudioElement(data.userid);
     const index = connected_users.indexOf(data.userid);
     if (index > -1) {
@@ -187,15 +184,7 @@ async function handleBackgroundTask(data) {
     }
 }
 
-// инициализация завершена
-async function ensureInitialized() {
-    if (!isInitialized) {
-        await init();
-    }
-}
-
 let addAudioPeer = (userId, userAvatar) => {
-    // User card
     if (!document.getElementById(`user_card_${userId}`)) {
         const userCard = document.createElement("div");
         userCard.id = `user_card_${userId}`;
@@ -215,7 +204,7 @@ let addAudioPeer = (userId, userAvatar) => {
 
         const username = document.createElement("div");
         username.className = "user-name";
-        username.innerText = `User ${userId}`; // Display user ID
+        username.innerText = `User ${userId}`;
 
         const canvas = document.createElement("canvas");
         canvas.id = `waveform_${userId}`;
@@ -257,10 +246,8 @@ let removeAudioElement = (userId) => {
 }
 
 let createPeerConnection = async (userId) => {
-    await ensureInitialized();
     
     const peerConnection = new RTCPeerConnection(servers);
-    connectionStates.set(userId, 'creating');
     
     const remoteStream = new MediaStream();
     
@@ -276,7 +263,6 @@ let createPeerConnection = async (userId) => {
         event.streams[0].getTracks().forEach(track => {
             remoteStream.addTrack(track);
         });
-        connectionStates.set(userId, 'track_added');
 
         // Create waveform
         const canvas = document.getElementById(`waveform_${userId}`);
@@ -284,56 +270,46 @@ let createPeerConnection = async (userId) => {
             new Waveform(remoteStream, canvas);
         }
     };
-    
+
     peerConnection.onicecandidate = async (event) => {
         if (event.candidate) {
             console.log("Sending ICE candidate to:", userId);
             sendActionSocket("ice", {"candidate": event.candidate, "to": userId});
         }
     };
-    
+    // В createPeerConnection добавить:
     peerConnection.onconnectionstatechange = () => {
         console.log(`Peer connection state for ${userId}:`, peerConnection.connectionState);
-        connectionStates.set(userId, peerConnection.connectionState);
+        
+        // При успешном соединении очищаем буфер
+        if (peerConnection.connectionState === 'connected') {
+            pendingIceCandidates.delete(userId);
+        }
     };
-    
+
     peers.set(userId, peerConnection);
     return peerConnection;
 }
 
 let createOffer = async (userId) => {
     try {
-        console.log("Creating offer for:", userId);
-        
-        const peerConnection = await createPeerConnection(userId);
-        
-        await waitForCondition(() => 
-            peerConnection.signalingState === 'stable', 3000);
-        
+        const peerConnection = await createPeerConnection(userId);        
         const offer = await peerConnection.createOffer();
-        console.log("Offer created:", offer);
-        
         await peerConnection.setLocalDescription(offer);
-        console.log("Local description set");
         
-        // Ждем установления локального описания
-        await waitForCondition(() => 
-            peerConnection.localDescription !== null, 3000);
+        // После установки localDescription проверяем буферизованные кандидаты
+        if (pendingIceCandidates.has(userId)) {
+            const candidates = pendingIceCandidates.get(userId);
+            for (const candidate of candidates) {
+                await peerConnection.addIceCandidate(candidate).catch(console.error);
+            }
+            pendingIceCandidates.delete(userId);
+        }
         
-        console.log("Sending offer to:", userId);
-        sendActionSocket("offer", {
-            "sdp": offer,
-            "to": userId
-        });
+        sendActionSocket("offer", {"sdp": offer, "to": userId});
         
     } catch (error) {
         console.error("Error creating offer for", userId, ":", error);
-        // Очищаем failed connection
-        if (peers.has(userId)) {
-            peers.get(userId).close();
-            peers.delete(userId);
-            connectionStates.delete(userId);
-        }
     }
 }
 
@@ -345,18 +321,24 @@ let createAnswer = async (userId, offer) => {
         
         await peerConnection.setRemoteDescription(offer);
         console.log("Remote description set for answer");
-        
+
+        if (pendingIceCandidates.has(userId)) {
+            const candidates = pendingIceCandidates.get(userId);
+            console.log(`Processing ${candidates.length} buffered ICE candidates for ${userId}`);
+            
+            for (const candidate of candidates) {
+                try {
+                    await peerConnection.addIceCandidate(candidate);
+                } catch (error) {
+                    console.error('Error adding buffered ICE candidate:', error);
+                }
+            }
+            pendingIceCandidates.delete(userId);
+        }
+
         const answer = await peerConnection.createAnswer();
-        console.log("Answer created:", answer);
-        
         await peerConnection.setLocalDescription(answer);
-        console.log("Local description set for answer");
-        
-        // Ждем установления локального описания
-        await waitForCondition(() => 
-            peerConnection.localDescription !== null, 3000);
-        
-        console.log("Sending answer to:", userId);
+
         sendActionSocket("answer", {
             "sdp": answer, 
             "to": userId
@@ -364,11 +346,7 @@ let createAnswer = async (userId, offer) => {
         
     } catch (error) {
         console.error("Error creating answer for", userId, ":", error);
-        if (peers.has(userId)) {
-            peers.get(userId).close();
-            peers.delete(userId);
-            connectionStates.delete(userId);
-        }
+
     }
 }
 
@@ -377,29 +355,22 @@ let user_disconnect = async (userId) => {
     if (peers.has(userId)) {
         peers.get(userId).close();
         peers.delete(userId);
-        connectionStates.delete(userId);
         console.log("Closed peer connection with user:", userId);
     }
 }
 
-// Основные обработчики с правильной асинхронностью
 btnConnect.addEventListener('click', async function(){
     btnConnect.disabled = true;
     btnDisconnect.disabled = false;
     
     try {
-        await ensureInitialized();
         addAudioPeer(myuserId, myAvatar);
-        
         if (connected_users.length === 0) {
             sendActionSocket("start_voice", {});
         } else {
-            // Последовательно создаем оферы для избежания гонки
             for (const userId of connected_users) {
                 addAudioPeer(userId);
                 await createOffer(userId);
-                // Небольшая задержка между подключениями
-                await delay(100);
             }
         }
     } catch (error) {
@@ -417,7 +388,6 @@ btnDisconnect.addEventListener('click', async function(){
     removeAudioElement(myuserId);
     sendActionSocket("disconnect_voice", {});
     
-    // Закрываем все подключения
     const disconnectPromises = [];
     for (let [userId, peer] of peers) {
         if (userId != myuserId) {
@@ -425,13 +395,10 @@ btnDisconnect.addEventListener('click', async function(){
             disconnectPromises.push(user_disconnect(userId));
         }
     }
-    
-    await Promise.allSettled(disconnectPromises);
     peers.clear();
-    connectionStates.clear();
 });
 
-// Инициализация при загрузке
+
 init().catch(error => {
     console.error("Initialization failed:", error);
 });
@@ -439,16 +406,29 @@ init().catch(error => {
 window.addEventListener('beforeunload', function() {
     if (connected_users.includes(String(myuserId)) || connected_users.includes(myuserId))
     {
-        sendActionSocket("disconnect_voice", {});
-        for (let [userId, peer] of peers) {
-            if (userId != myuserId) {
-                peer.close();
-            }
+    console.log("Disconnecting voice");
+    btnConnect.disabled = false;
+    btnDisconnect.disabled = true;
+    
+    removeAudioElement(myuserId);
+    sendActionSocket("disconnect_voice", {});
+    
+    const disconnectPromises = [];
+    for (let [userId, peer] of peers) {
+        if (userId != myuserId) {
+            console.log("Disconnecting from", userId);
+            disconnectPromises.push(user_disconnect(userId));
         }
-        peers.clear();
-        connectionStates.clear();
-
     }
-
-
+    peers.clear();
+    }
 });
+
+
+btnSendMessage.addEventListener("click", async function(){
+    const inputField = document.getElementById("message-input-field")
+    let content = inputField.value
+    console.log("sending message: ", content)
+    sendActionSocket("user_message", content)
+    inputField.value = '';
+})

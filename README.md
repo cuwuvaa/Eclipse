@@ -10,6 +10,12 @@
 
 **Eclipse** is a robust, real-time chat and voice communication platform inspired by modern social platforms. It is built with a scalable backend architecture using Django and Django Channels, designed to handle asynchronous communication efficiently.
 
+### Demo
+
+Here is a demonstration of the real-time chat and video connection in action:
+
+![Eclipse Chat and Video Demo](./.github/assets/image.png)
+
 ---
 
 ### Key Backend Features

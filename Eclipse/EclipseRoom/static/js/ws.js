@@ -23,6 +23,15 @@ function sendActionSocket(action, message) {
     }
 }
 
+ws.onclose = async function(event) {
+    console.log('WebSocket connection closed. Cleaning up.', event);
+    await cleanup();
+};
+
+ws.onerror = function(error) {
+    console.error('WebSocket Error: ', error);
+};
+
 //слушаем вс
 ws.onmessage = async function(event) {
     const data = JSON.parse(event.data);
@@ -54,7 +63,7 @@ ws.onmessage = async function(event) {
         }
         if (data.action == 'user_disconnect'){
             console.log(data.user.id)
-            await handleUserLeft(data.user.id);
+            handleUserLeft(data.user.id);
         }
     }
 };

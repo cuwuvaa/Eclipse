@@ -4,8 +4,13 @@
 
 
 <h1>VOICE CALL</h1>
-<button id="connect_call">connect</button>
-<button id="disconnect_call">disconnect</button>
+<div class="media-controls">
+    <button id="btnConnect" class="btn btn-success">Join Call</button>
+    <button id="btnDisconnect" class="btn btn-danger" style="display: none;">Leave Call</button>
+    
+    <button id="btnToggleMic" class="btn btn-secondary" style="display: none;">Mute</button>
+    <button id="btnToggleCamera" class="btn btn-secondary" style="display: none;">Stop Camera</button>
+</div>
 <div id="local-video-container"></div>
 <div id="voice_participants">
 

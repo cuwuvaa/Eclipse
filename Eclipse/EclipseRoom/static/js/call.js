@@ -1,3 +1,4 @@
+
 var isConnected = false;
 
 btnConnect.addEventListener('click', async function(){
@@ -5,12 +6,16 @@ btnConnect.addEventListener('click', async function(){
     isConnected = true;
     await initWebRTC(); 
     sendActionSocket("connect",{});
+
+    document.getElementById('btnToggleMic').style.display = 'inline-block';
+    document.getElementById('btnToggleCamera').style.display = 'inline-block';
+    document.getElementById('btnDisconnect').style.display = 'inline-block';
 });
 
 btnDisconnect.addEventListener('click', async function() {
-    sendActionSocket("disconnect",{});
-    await cleanup()
-})
+    sendActionSocket("user_disconnect",{});
+    await cleanup();
+});
 
 async function renderUser(e) {
     const userContainer = document.getElementById('voice_participants');
@@ -128,33 +133,59 @@ function handleRemoteStream(userId, stream) {
     document.getElementById('remote-media-container').appendChild(remoteVideo);
 }
 
-function handleUserLeft(userId)
-{
-    peerConnections[userId].close()
-    delete peerConnections[userId]
-    document.getElementById(`remote-video-${userId}`).remove();
+function handleUserLeft(userId) {
+    console.log(`Cleaning up connection for user: ${userId}`);
+    if (peerConnections[userId]) {
+        peerConnections[userId].close();
+        delete peerConnections[userId];
+    }
+
+    const remoteVideo = document.getElementById(`remote-video-${userId}`);
+    if (remoteVideo) {
+        remoteVideo.remove();
+    }
+
+    const userElement = document.getElementById(`user-${userId}`);
+    if (userElement) {
+        userElement.remove();
+    }
 }
 
-async function cleanup(){
-    // Close all peer connections                                                      
-    for (const userId in peerConnections) {                                            
-        peerConnections[userId].close();                                               
-    }                                                                                  
-    peerConnections = {};                                                              
-                                                                                       
-    // Stop local media stream                                                         
-    if (localStream) {                                                                 
-        localStream.getTracks().forEach(track => track.stop());                        
-        localStream = null;                                                            
-    }                                                                                  
-                                                                                       
-    // Remove local video                                                              
-    const localVideo = document.getElementById('local-video');                         
-    if (localVideo) {                                                                  
-        localVideo.remove();                                                           
-    }                                                                                  
-                                                                                       
-    // Reset UI                                                                        
-    btnConnect.disabled = false;                                                       
-    isConnected = false;                                                                       
+async function cleanup() {
+    console.log('Running cleanup...');
+
+    // Close all peer connections
+    for (const userId in peerConnections) {
+        if (peerConnections[userId]) {
+            peerConnections[userId].close();
+        }
+    }
+    peerConnections = {};
+
+    // Stop local media stream
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+
+    // Remove all video elements from the DOM
+    const localVideo = document.getElementById('local-video');
+    if (localVideo) {
+        localVideo.remove();
+    }
+    
+    const remoteMediaContainer = document.getElementById('remote-media-container');
+    if (remoteMediaContainer) {
+        remoteMediaContainer.innerHTML = '';
+    }
+
+    const voiceParticipantsContainer = document.getElementById('voice_participants');
+    if (voiceParticipantsContainer) {
+        voiceParticipantsContainer.innerHTML = '';
+    }
+
+    // Reset UI state
+    btnConnect.disabled = false;
+    isConnected = false;
+    console.log('Cleanup complete.');
 }                                                                                      

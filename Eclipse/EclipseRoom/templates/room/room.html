@@ -1,0 +1,46 @@
+{% load static %}
+<h1>this is room {{room.name}}</h1>
+<h2>about us: {{room.description}}</h2>
+
+
+<h1>VOICE CALL</h1>
+<button id="connect_call">connect</button>
+<button id="disconnect_call">disconnect</button>
+<div id="local-video-container"></div>
+<div id="voice_participants">
+
+</div>
+<div id="remote-media-container"></div>
+
+
+{% if is_participant %}
+<h1>you are a participant</h1>
+{% else %}
+<form method="POST">
+    {% csrf_token %}
+    <button name="join">join</button>
+</form>
+{% endif %}
+
+<div id="messages" style="border: 2px solid black; padding: 20px;">
+    <div id="message" style="width: max-content; display: block; border: 2px solid black">
+        <h3>Sender</h3>
+        <h2>Text here</h2>
+    </div>
+</div>
+<input id="message_input">
+<button id="message_send">Send</button>
+
+<h1>participants:</h1>
+{% for part in participants%}
+<h3>{{part.user.username}}</h3>
+{% endfor %}
+
+
+
+<script src="{% static 'js/config.js' %}"></script>
+<script src="{% static 'js/ws.js' %}"></script>
+<script src="{% static 'js/dom.js' %}"></script>
+<script src="{% static 'js/message.js' %}"></script>
+<script src="{% static 'js/call.js' %}"></script>
+<script src="{% static 'js/init.js' %}"></script>

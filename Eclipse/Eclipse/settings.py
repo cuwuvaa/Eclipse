@@ -41,10 +41,15 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+
+    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
+    'channels',
 
     'EclipseUser',
+    'EclipseRoom',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -77,6 +82,23 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Eclipse.wsgi.application'
+ASGI_APPLICATION = 'Eclipse.asgi.application'
+
+CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
+
+#REDISKA
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             "hosts": [(redis_info.hostname, redis_info.port)],
+#         },
+#     },
+# }
 
 
 # Database
@@ -114,7 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -130,3 +152,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = 'rooms:main'  # Куда перенаправлять после логина
+LOGOUT_REDIRECT_URL = 'user:login' # Куда перенаправлять после логаута
+LOGIN_URL = 'user:login' # URL для логина (для декоратора @login_required)
+
+# Настройки сессии
+SESSION_COOKIE_AGE = 1209600  # 2 недели в секундах (для "Запомнить меня")
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Сессия закроется при закрытии браузера
+
+# Media files (uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

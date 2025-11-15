@@ -2,11 +2,6 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from EclipseUser.models.user import EclipseUser
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EclipseUser
-        fields = ('id', 'username', 'email', 'displayname', 'date_joined')
-
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, 

@@ -1,0 +1,7 @@
+<h1>Profile</h1>
+<img src="{{ USER.avatar.url }}">
+<h2>{{USER.username}}</h2>
+<h2>{{USER.displayname}}</h2>
+{% if USER.username == user.username %}
+<a href="{% url 'user:logout'%}">logout</a>
+{% endif %}

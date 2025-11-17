@@ -65,5 +65,27 @@ ws.onmessage = async function(event) {
             console.log(data.user.id)
             handleUserLeft(data.user.id);
         }
+        if (data.action == 'user_camera')
+        {
+            if (data.user.id === uid) {
+                return; // Don't act on our own messages
+            }
+
+            const remoteVideo = document.getElementById(`remote-video-${data.user.id}`);
+            
+            if (data.status) { // Camera is ON
+                if (remoteVideo) {
+                    console.log(`Showing video for ${data.user.id}`);
+                    remoteVideo.style.display = "block";
+                }
+                // If remoteVideo doesn't exist, ontrack will handle creating it.
+                // We no longer log an error here, which fixes the race condition issue.
+            } else { // Camera is OFF
+                if (remoteVideo) {
+                    console.log(`Hiding video for ${data.user.id}`);
+                    remoteVideo.style.display = "none";
+                }
+            }
+        }
     }
 };

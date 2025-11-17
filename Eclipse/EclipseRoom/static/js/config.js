@@ -13,8 +13,3 @@ const servers = {
 localhost = "http://localhost:8000/"
 
 let debug = true;
-
-const constraints = {
-    'video': debug,
-    'audio': true
-};

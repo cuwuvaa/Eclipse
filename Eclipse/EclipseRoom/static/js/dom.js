@@ -5,3 +5,6 @@ let messageContainer = document.getElementById("messages")
 let voiceContainer = document.getElementById("voice_participants")
 let btnConnect = document.getElementById("connect_call")
 let btnDisconnect = document.getElementById("disconnect_call")
+
+let btnCam = document.getElementById("toggle_cam")
+let btnMic = document.getElementById("toggle_mic")

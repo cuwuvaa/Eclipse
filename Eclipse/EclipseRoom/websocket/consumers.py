@@ -78,6 +78,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "pkg": message["sdp"],
                     "from_user_id": self.user["id"],
                 })
+        elif action == "user_camera":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'user_camera',
+                    'status':message["enabled"],
+                    'user': self.user,
+                }
+            )
+
         elif action == "user_message":
             # Handle text messages as before
             usermsg = await self.create_message(message, self.user["id"])
@@ -86,6 +96,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "new_message",
                 "message": serialized_data
             })
+
         elif action == "user_disconnect":
             if self.user["id"] in room_connections.get(self.room_id, {}):
                 del room_connections[self.room_id][self.user["id"]]
@@ -101,25 +112,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Handler to forward SDP (offer, answer, candidate) to the client
     async def send_sdp(self, event):
-        await self.send(text_data=json.dumps({
-            "action": event["action"],
-            "pkg": event["pkg"],
-            "from_user_id": event["from_user_id"],
-        }))
+        if event['from_user_id'] != self.user["id"]:
+            await self.send(text_data=json.dumps({
+                "action": event["action"],
+                "pkg": event["pkg"],
+                "from_user_id": event["from_user_id"],
+            }))
 
     # Handler to broadcast new user connection
     async def user_connect(self, event):
-            await self.send(text_data=json.dumps({
-                'action': 'new_connect',
-                'user': event['user']
-            }))
+            if event['user']['id'] != self.user["id"]:
+                await self.send(text_data=json.dumps({
+                    'action': 'new_connect',
+                    'user': event['user']
+                }))
+    
+    async def user_camera(self,event):
+            if event['user']['id'] != self.user["id"]:
+                await self.send(text_data=json.dumps({
+                    'action':'user_camera',
+                    'status':event['status'],
+                    'user':event['user'],
+                }))
 
     # Handler to broadcast user disconnection
     async def user_disconnect(self, event):
-        await self.send(text_data=json.dumps({
-            'action': 'user_disconnect',
-            'user': event['user'],
-        }))
+        if event['user']['id'] != self.user["id"]:
+            await self.send(text_data=json.dumps({
+                'action': 'user_disconnect',
+                'user': event['user'],
+            }))
 
     # Handler for new text messages
     async def new_message(self, event):

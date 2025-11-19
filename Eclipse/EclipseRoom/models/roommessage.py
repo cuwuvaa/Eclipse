@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 from EclipseRoom.models import room, roomuser
-from EclipseUser.models.user import EclipseUser
 
 class RoomMessage(models.Model):
     room = models.ForeignKey(
@@ -12,7 +11,7 @@ class RoomMessage(models.Model):
     )
     
     room_user = models.ForeignKey(
-        EclipseUser, 
+        roomuser.RoomUser, 
         on_delete=models.CASCADE,
         related_name='messages',
         verbose_name='отправитель'

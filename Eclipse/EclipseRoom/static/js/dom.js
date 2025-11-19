@@ -8,3 +8,6 @@ let btnDisconnect = document.getElementById("disconnect_call")
 
 let btnCam = document.getElementById("toggle_cam")
 let btnMic = document.getElementById("toggle_mic")
+let btnDemo = document.getElementById("toggle_demo")
+
+let membersContainer = document.getElementById("room_members");

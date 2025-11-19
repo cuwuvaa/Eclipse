@@ -10,6 +10,7 @@
     
     <button id="toggle_mic" class="btn btn-secondary" style="display: none;">Mute</button>
     <button id="toggle_cam" class="btn btn-secondary" style="display: none;">Camera on</button>
+    <button id="toggle_demo" class="btn btn-secondary" style="display: none;">Screen on</button>
 </div>
 <div id="local-video-container"></div>
 <div id="voice_participants">
@@ -27,25 +28,25 @@
 </form>
 {% endif %}
 
-<div id="messages" style="border: 2px solid black; padding: 20px;">
-    <div id="message" style="width: max-content; display: block; border: 2px solid black">
-        <h3>Sender</h3>
-        <h2>Text here</h2>
-    </div>
+<div id="messages" style="border: 2px solid black; padding: 10px; height: 500px; overflow-y: auto; display: flex; flex-direction: column-reverse;">
+    <div id="topMarker"></div>
+    
 </div>
 <input id="message_input">
 <button id="message_send">Send</button>
 
-<h1>participants:</h1>
-{% for part in participants%}
-<h3>{{part.user.username}}</h3>
-{% endfor %}
+<div id="room_members">
+    <div id="profile-{{part.user.id}}">
+        <h1>Example profile</h1>
+    </div>
+<div>
 
 
 
 <script src="{% static 'js/config.js' %}"></script>
-<script src="{% static 'js/ws.js' %}"></script>
 <script src="{% static 'js/dom.js' %}"></script>
+<script src="{% static 'js/ui.js' %}"></script>
+<script src="{% static 'js/ws.js' %}"></script>
 <script src="{% static 'js/message.js' %}"></script>
 <script src="{% static 'js/call.js' %}"></script>
 <script src="{% static 'js/init.js' %}"></script>

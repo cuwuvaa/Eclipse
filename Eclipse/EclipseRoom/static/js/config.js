@@ -10,6 +10,21 @@ const servers = {
     ]
 };
 
-localhost = "http://localhost:8000/"
+const VIDEO_CONSTRAINTS = {
+    width: { ideal: 1280},
+    height: { ideal: 720},
+    frameRate: { ideal: 15, min: 10, max: 60 },
+};
+
+const DEMO_CONSTRAINTS = {
+    width: { ideal: 1280},
+    height: { ideal: 720},
+    frameRate: { ideal: 25, max: 30 },
+    cursor: "always",
+};
+
+const localhost = window.location.origin + '/';
 
 let debug = true;
+
+let userdata; 

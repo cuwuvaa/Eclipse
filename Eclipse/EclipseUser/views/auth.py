@@ -25,7 +25,7 @@ class RegisterView(View):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('user:profile', username=user.username)
+            return redirect('user:profile')
         else:
             return HttpResponse("error while register")
     

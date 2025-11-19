@@ -1,11 +1,55 @@
-from rest_framework import permissions
+from rest_framework.permissions import BasePermission
+from EclipseRoom.models.roomuser import RoomUser
 
-class IsRoomMember(permissions.BasePermission):
+class IsRoomAdminOrCreator(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # obj — это Message
+        message = obj
+        room = message.room
+        user = request.user
+
+        if message.room_user.role == RoomUser.ROLE_CREATOR:
+            return message.room_user.user == user
+
+        try:
+            room_user = RoomUser.objects.get(room=room, user=user)
+        except RoomUser.DoesNotExist:
+            return False
+
+        return (
+            room_user.role in [RoomUser.ROLE_CREATOR, RoomUser.ROLE_MODERATOR] or
+            message.room_user.user == user
+        )
+
+class IsModerator(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        try:
+            room_user = RoomUser.objects.get(room=obj.room, user=request.user)
+        except RoomUser.DoesNotExist:
+            return False
+
+        return (room_user.role in [RoomUser.ROLE_CREATOR, RoomUser.ROLE_MODERATOR] and obj.role != "creator")
+    
+class RoleChange(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user_to_be_changed = obj # This is the RoomUser instance whose role is being changed
+        room = user_to_be_changed.room
+        user = request.user # This is the user making the PATCH request
+
+        try:
+            # Get the RoomUser profile of the user making the request
+            user_making_request_profile = RoomUser.objects.get(room=room, user=user)
+        except RoomUser.DoesNotExist:
+            return False
+
+        return user_making_request_profile.role in [RoomUser.ROLE_CREATOR, RoomUser.ROLE_MODERATOR] and  (user_making_request_profile != user_to_be_changed)
+
+class IsRoomMember(BasePermission):
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        room_id = view.kwargs.get('pk')
+        room_id = view.kwargs.get('room_pk')
         if room_id:
             return request.user.room_users.filter(room_id=room_id).exists()
         return False

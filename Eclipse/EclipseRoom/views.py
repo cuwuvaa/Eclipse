@@ -24,7 +24,11 @@ class RoomCreate(LoginRequiredMixin, View):
         
         if form.is_valid():
             room = form.save()
-            roomuser = RoomUser.objects.create(user=request.user, room=room)
+            RoomUser.objects.create(
+                user=request.user, 
+                room=room, 
+                role=RoomUser.ROLE_CREATOR
+            )
             return redirect("rooms:room", pk=room.id)
         
 class RoomPage(LoginRequiredMixin, View):
@@ -41,6 +45,5 @@ class RoomPage(LoginRequiredMixin, View):
     
     def post(self, request, pk):
         if 'join' in request.POST:
-            # Use get_or_create to avoid creating duplicate entries
             RoomUser.objects.get_or_create(user=request.user, room_id=pk)
             return redirect("rooms:room", pk=pk)

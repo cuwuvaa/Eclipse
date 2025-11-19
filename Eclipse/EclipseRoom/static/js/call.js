@@ -3,18 +3,20 @@ btnConnect.addEventListener('click', async function(){
     isConnected = true;
     await initWebRTC(); 
     sendActionSocket("connect",{});
+    btnConnect.style.display = 'none';
     document.getElementById('toggle_mic').style.display = 'inline-block';
     document.getElementById('toggle_cam').style.display = 'inline-block';
     document.getElementById('disconnect_call').style.display = 'inline-block';
+    btnDemo.style.display = 'inline-block';
 });
 
-btnDisconnect.addEventListener('click', async function() {
-    sendActionSocket("user_disconnect",{});
-    await cleanup();
-});
+btnDisconnect.addEventListener('click', leaveVoice);
 
+
+// БЛЯ ВЕСЬ КОД РЕАЛЬНО НАДО РЕФАКТОРИТЬ, А ТО ЭТО ПИЗДЕЦ ПОЛНЫЙ (ЛЮДИ ПРОСТИТЕ РЕАЛЬНО)
 var isMicMuted = true;
 var isCameraOff = false;
+var isDemoOff = false;
 var isConnected = false;
 
 let audioTrack = null;
@@ -32,36 +34,99 @@ btnMic.addEventListener('click', function() {
     }
 });
 
-btnCam.addEventListener('click', function() {
+let newVideoTrack;
+
+btnCam.addEventListener('click', async function() {
     if (videoTrack) {
         videoTrack.enabled = !isCameraOff;
         isCameraOff = !isCameraOff;
         if (isCameraOff) {
             btnCam.innerText = "Camera off";
             sendActionSocket("user_camera", {"enabled": true});
+            newVideoTrack = (await navigator.mediaDevices.getUserMedia({ video: true })).getVideoTracks()[0];
+            localStream.removeTrack(videoTrack);
+            localStream.addTrack(newVideoTrack);
             showLocalVideo(true);
+            Object.values(peerConnections).forEach(pc => {
+                const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+                if (sender) sender.replaceTrack(newVideoTrack);
+        });
         } else {
             btnCam.innerText = "Camera on";
+            newVideoTrack.stop();
+            localStream.removeTrack(newVideoTrack);
             sendActionSocket("user_camera", {"enabled": false});
             showLocalVideo(false);
         }
     }
 });
 
-async function renderUser(e) {
-    const userContainer = document.getElementById('voice_participants');
-    if (userContainer) {
-        const userElement = document.createElement('h1');
-        userElement.textContent = e.username || e.displayname;
-        userElement.id = `user-${e.id}`;
-        userContainer.appendChild(userElement);
+btnDemo.addEventListener("click", async function () {
+    try {
+        if (!isDemoOff)
+        {
+            isDemoOff = !isDemoOff
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: DEMO_CONSTRAINTS,
+                audio: false
+            });
+
+            const newScreenTrack = screenStream.getVideoTracks()[0];
+            if (!newScreenTrack) throw new Error("No video track from screen share");
+
+            localStream.getVideoTracks().forEach(track => {
+                localStream.removeTrack(track);
+                track.stop();
+            });
+
+            localStream.addTrack(newScreenTrack);
+
+            for (const pc of Object.values(peerConnections)) {
+                const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+                if (sender) {
+                    await sender.replaceTrack(newScreenTrack);
+                }
+            }
+
+            videoTrack = newScreenTrack;
+
+            showLocalVideo(true);
+            btnDemo.innerText = "Stop Screen Share";
+            sendActionSocket("user_camera", {"enabled": true});
+
+            newScreenTrack.onended = () => {
+                console.log("Screen share ended by user");
+                stopDemo();
+            };
+        }
+        else
+        {   
+            stopDemo();
+        }
+    } catch (err) {
+        console.error("Screen share failed:", err);
+        alert("Не удалось начать демонстрацию экрана");
     }
+    
+})
+
+function stopDemo()
+{
+    btnDemo.innerText = "Screen on";
+    sendActionSocket("user_camera", {"enabled": false});
+    localStream.getVideoTracks().forEach(track => {
+    localStream.removeTrack(track);
+        track.stop();
+    });
+    showLocalVideo(false);
+    isDemoOff = !isDemoOff
 }
 
 let localStream = null;
 let peerConnections = {}; // { user_id: RTCPeerConnection }
 
 async function initWebRTC() {
+    btnCam.innerText = "Camera on";
     await setupMedia();
 }
 
@@ -69,34 +134,18 @@ async function setupMedia() {
     try {
         localStream = await navigator.mediaDevices.getUserMedia({
             audio: true,
-            video: true,
+            video: VIDEO_CONSTRAINTS,
         });
         console.log("Microphone & video access granted");
         audioTrack = localStream.getAudioTracks()[0];
         videoTrack = localStream.getVideoTracks()[0];
-        videoTrack.enabled = false;
+        videoTrack.stop();
     } catch (error) {
         console.error("Error accessing media devices:", error);
     }
 }
 
-function showLocalVideo(status) {
-    const localVideoContainer = document.getElementById('local-video-container');
-    localVideoContainer.innerHTML = ''; // Очищаем контейнер
-    if (status)
-    {
-        const localVideo = document.createElement('video');
-        localVideo.srcObject = localStream;
-        localVideo.autoplay = true;
-        localVideo.muted = true;
-        localVideo.playsInline = true;
-        localVideo.id = 'local-video';
-        localVideo.style.width = '200px';
-        localVideo.style.border = '2px solid green';
-        localVideoContainer.appendChild(localVideo);
-    }
 
-}
 
 async function handleUserJoined(remoteUserId) {
     console.log(`New user joined: ${remoteUserId}`);
@@ -108,7 +157,7 @@ async function handleUserJoined(remoteUserId) {
     sendActionSocket('offer', {"sdp":offer, "to":remoteUserId});
 }
 
-async function createPeerConnection(remoteUserId) {
+async function createPeerConnection(remoteUserId, camera) {
 
     const pc = new RTCPeerConnection(servers);
 
@@ -123,8 +172,8 @@ async function createPeerConnection(remoteUserId) {
         console.log(event.streams[0]);
         if (event.track.kind === 'audio') {
             handleAudioTrack(event.streams[0], remoteUserId);
-        } else if (event.track.kind === 'video') {
-            handleVideoTrack(event.streams[0], remoteUserId, event.track.enabled);
+        }if (event.track.kind === 'video') {
+            handleVideoTrack(event.streams[0], remoteUserId, camera);
         }
     };
 
@@ -142,10 +191,10 @@ async function createPeerConnection(remoteUserId) {
     return pc;
 }
 
-async function handleOffer(remoteUserId, offer) {
+async function handleOffer(remoteUserId, offer, camera) {
     console.log(`Received offer from ${remoteUserId}`);
     
-    await createPeerConnection(remoteUserId);
+    await createPeerConnection(remoteUserId, camera);
     await peerConnections[remoteUserId].setRemoteDescription(new RTCSessionDescription(offer));
     
     const answer = await peerConnections[remoteUserId].createAnswer();
@@ -173,8 +222,6 @@ async function handleICECandidate(remoteUserId, candidate) {
     }
 }
 
-async function renderVideo(userId) {
-}
 
 function handleAudioTrack(stream, peerId) {
     const remoteAudio = document.createElement('audio');
@@ -191,7 +238,7 @@ function handleVideoTrack(stream, peerId, status) {
     remoteVideo.id = `remote-video-${peerId}`;
     remoteVideo.srcObject = stream;
     remoteVideo.autoplay = true;
-    if (status)
+    if (!status)
     {
         remoteVideo.style.display = 'none';
     }
@@ -222,6 +269,18 @@ function handleUserLeft(userId) {
     }
 }
 
+async function leaveVoice(){
+
+    sendActionSocket("user_disconnect",{});
+    await cleanup();
+    btnConnect.style.display = 'inline-block';
+    document.getElementById('toggle_mic').style.display = 'none';
+    document.getElementById('toggle_cam').style.display = 'none';
+    document.getElementById('disconnect_call').style.display = 'none';
+    btnConnect.disabled = false;
+    isCameraOff = false;
+}
+
 async function cleanup() {
     console.log('Running cleanup...');
 
@@ -237,23 +296,14 @@ async function cleanup() {
         localStream.getTracks().forEach(track => track.stop());
         localStream = null;
     }
-
-    const localVideo = document.getElementById('local-video');
-    if (localVideo) {
-        localVideo.remove();
-    }
     
     const remoteMediaContainer = document.getElementById('remote-media-container');
     if (remoteMediaContainer) {
         remoteMediaContainer.innerHTML = '';
     }
 
-    const voiceParticipantsContainer = document.getElementById('voice_participants');
-    if (voiceParticipantsContainer) {
-        voiceParticipantsContainer.innerHTML = '';
-    }
-
-    btnConnect.disabled = false;
+    document.getElementById(`user-${userdata.id}`).remove();
+    showLocalVideo(false);
     isConnected = false;
     console.log('Cleanup complete.');
 }

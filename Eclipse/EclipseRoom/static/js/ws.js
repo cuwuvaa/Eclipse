@@ -5,10 +5,8 @@ pathSegments.pop();
 const roomId = pathSegments.pop();
 console.log("connecting to room: ", roomId);
 
-let uid;
-
 const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-const ws = new WebSocket(protocol + window.location.host + `/ws/${roomId}/`);
+const ws = new WebSocket(protocol + window.location.host + `/ws/${roomId}/`);;
 
 
 //функция для отправки сообщения через вс
@@ -23,40 +21,58 @@ function sendActionSocket(action, message) {
     }
 }
 
-ws.onclose = async function(event) {
-    console.log('WebSocket connection closed. Cleaning up.', event);
-    await cleanup();
-};
-
 ws.onerror = function(error) {
     console.error('WebSocket Error: ', error);
+    btnConnect.disabled = true;
 };
 
 //слушаем вс
 ws.onmessage = async function(event) {
     const data = JSON.parse(event.data);
     console.log('Received:', data);
-    if (data.action == "voice_users")
+    if (data.action == "handshake")
         {
-            uid = data.me
+            userdata = data.profile;
+            console.log(userdata);
+            if (data.connected.length != 0)
+            {
+            let connected_users = await fetchdata(`${localhost}api/rooms/${roomId}/users/bulk/?user_ids=${data.connected}`)
+            for (user of connected_users)
+            {
+                renderUser(user);
+            }
+        }
         }
     if (data.action == "new_message")
         {
-            await renderMessage(data.message);
+            appendMessage(data.message);
         }
+    
+    if (data.action == "delete_message")
+    {
+        document.getElementById(`message-${data.message.id}`).remove()
+    }
+    if (data.action == "kick_user" && data.message.id == userdata.id)
+    {
+        window.location.href = redirurl;
+    }
     if (data.action == 'new_connect'){
         renderUser(data.user)
-        if (isConnected && data.user.id != uid)
+        if (isConnected && data.user.id != userdata.id)
         {
             await handleUserJoined(data.user.id);
         }
     }
+    if (!isConnected && data.action == 'user_disconnect'){
+        console.log(data.user.id);
+        document.getElementById(`user-${data.user.id}`).remove();
+    }
     if (isConnected){
         if (data.action == 'offer'){
-            await handleOffer(data.from_user_id, data.pkg);
+            await handleOffer(data.from_user_id, data.pkg, data.camera);
         }
         if (data.action == 'answer'){
-            await handleAnswer(data.from_user_id, data.pkg);
+            await handleAnswer(data.from_user_id, data.pkg), data.camera;
         }
         if (data.action == 'ice_candidate'){
             await handleICECandidate(data.from_user_id, data.pkg);
@@ -65,22 +81,34 @@ ws.onmessage = async function(event) {
             console.log(data.user.id)
             handleUserLeft(data.user.id);
         }
+        if (data.action == 'voice_kick')
+        {
+            console.log(data.id);
+            if (data.id != userdata.id)
+            {
+                console.log("another user was kicked")
+                handleUserLeft(data.id);
+            }
+            else
+            {
+                console.log("I AM KICKED")
+                leaveVoice();
+            }
+        }
         if (data.action == 'user_camera')
         {
-            if (data.user.id === uid) {
-                return; // Don't act on our own messages
+            if (data.user.id === userdata.id) {
+                return;
             }
 
             const remoteVideo = document.getElementById(`remote-video-${data.user.id}`);
             
-            if (data.status) { // Camera is ON
+            if (data.status) {
                 if (remoteVideo) {
                     console.log(`Showing video for ${data.user.id}`);
                     remoteVideo.style.display = "block";
                 }
-                // If remoteVideo doesn't exist, ontrack will handle creating it.
-                // We no longer log an error here, which fixes the race condition issue.
-            } else { // Camera is OFF
+            } else { 
                 if (remoteVideo) {
                     console.log(`Hiding video for ${data.user.id}`);
                     remoteVideo.style.display = "none";

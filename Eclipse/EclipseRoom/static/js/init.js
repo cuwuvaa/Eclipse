@@ -6,6 +6,7 @@ async function init() {
         console.log("join server!");
         return
     };
+
     setTimeout(() => {
     renderMembers();
     renderMessages();

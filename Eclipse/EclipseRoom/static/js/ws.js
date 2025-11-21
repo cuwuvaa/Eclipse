@@ -1,25 +1,6 @@
-const currentUrl = window.location.href;
-console.log(currentUrl);
-const pathSegments = currentUrl.split("/");
-pathSegments.pop();
-const roomId = pathSegments.pop();
 console.log("connecting to room: ", roomId);
 
-const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 const ws = new WebSocket(protocol + window.location.host + `/ws/${roomId}/`);;
-
-
-//функция для отправки сообщения через вс
-function sendActionSocket(action, message) {
-    if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-            'action': action,
-            'message': message
-        }));
-    } else {
-        console.warn('WebSocket not open, message not sent:', action);
-    }
-}
 
 ws.onerror = function(error) {
     console.error('WebSocket Error: ', error);
@@ -54,7 +35,7 @@ ws.onmessage = async function(event) {
     }
     if (data.action == "kick_user" && data.message.id == userdata.id)
     {
-        window.location.href = redirurl;
+        window.location.reload();
     }
     if (data.action == 'new_connect'){
         renderUser(data.user)

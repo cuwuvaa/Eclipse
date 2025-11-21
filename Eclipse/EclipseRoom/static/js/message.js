@@ -81,5 +81,3 @@ function changeRole(userId,role)
     return response.text();
     })
 }
-
-const redirurl = "https://shpilivili.org/uploads/posts/2021-11/1638014058_1-shpilivili-cc-p-porno-golii-starii-negr-1.jpg"

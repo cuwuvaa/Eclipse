@@ -224,6 +224,7 @@ async function handleICECandidate(remoteUserId, candidate) {
 
 
 function handleAudioTrack(stream, peerId) {
+    console.log("call audio handle")
     const remoteAudio = document.createElement('audio');
     remoteAudio.id = `remote-audio-${peerId}`;
     remoteAudio.srcObject = stream;
@@ -234,6 +235,7 @@ function handleAudioTrack(stream, peerId) {
 }
 
 function handleVideoTrack(stream, peerId, status) {
+    console.log("call vidoo handle")
     const remoteVideo = document.createElement('video');
     remoteVideo.id = `remote-video-${peerId}`;
     remoteVideo.srcObject = stream;

@@ -28,3 +28,21 @@ const localhost = window.location.origin + '/';
 let debug = true;
 
 let userdata; 
+
+const currentUrl = window.location.href;
+const pathSegments = currentUrl.split("/");
+pathSegments.pop();
+const roomId = pathSegments.pop();
+const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+
+//функция для отправки сообщения через вс
+function sendActionSocket(action, message) {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            'action': action,
+            'message': message
+        }));
+    } else {
+        console.warn('WebSocket not open, message not sent:', action);
+    }
+}

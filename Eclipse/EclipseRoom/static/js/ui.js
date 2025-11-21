@@ -8,7 +8,6 @@ let nextMessagesUrl = null;
  * @param {object} e - User data object with username/displayname and id.
  */
 async function renderUser(e) {
-    const userContainer = document.getElementById('voice_participants');
     if (userContainer && !document.getElementById(`user-${e.id}`)) {
         const userDiv = document.createElement('div')
         const userElement = document.createElement('h1');
@@ -32,6 +31,7 @@ async function renderUser(e) {
  * @param {boolean} status - If true, shows the video; otherwise, removes it.
  */
 async function showLocalVideo(status) {
+    console.log("ui local handle")
     const localVideoContainer = document.getElementById('local-video-container');
     localVideoContainer.innerHTML = ''; // Clear the container
     if (status) {
@@ -46,48 +46,6 @@ async function showLocalVideo(status) {
         localVideoContainer.appendChild(localVideo);
     }
 }
-
-/**
- * Creates an audio element for a remote user's stream.
- * @param {MediaStream} stream - The remote user's media stream.
- * @param {string} peerId - The ID of the remote user.
- */
-function handleAudioTrack(stream, peerId) {
-    if (document.getElementById(`remote-audio-${peerId}`)) return;
-    const remoteAudio = document.createElement('audio');
-    remoteAudio.id = `remote-audio-${peerId}`;
-    remoteAudio.srcObject = stream;
-    remoteAudio.autoplay = true;
-    document.getElementById('remote-media-container').appendChild(remoteAudio);
-    
-    console.log(`Аудио обработано для пира: ${peerId}`);
-}
-
-/**
- * Creates or updates a video element for a remote user's stream.
- * @param {MediaStream} stream - The remote user's media stream.
- * @param {string} peerId - The ID of the remote user.
- * @param {boolean} status - The initial enabled status of the video track.
- */
-function handleVideoTrack(stream, peerId, status) {
-    let remoteVideo = document.getElementById(`remote-video-${peerId}`);
-    if (!remoteVideo) {
-        remoteVideo = document.createElement('video');
-        remoteVideo.id = `remote-video-${peerId}`;
-        remoteVideo.autoplay = true;
-        document.getElementById('remote-media-container').appendChild(remoteVideo);
-        console.log(`Видео-элемент создан для пира: ${peerId}`);
-    }
-    
-    remoteVideo.srcObject = stream;
-
-    if (!status) {
-        remoteVideo.style.display = 'none';
-    } else {
-        remoteVideo.style.display = 'block';
-    }
-}
-
 
 // --- Functions from message.js ---
 
@@ -153,6 +111,7 @@ async function renderMessages() {
  * Handles the scroll event on the message container to fetch older messages.
  */
 async function handleMessageScroll() {
+    console.log("ui msg handle")
     if (nextMessagesUrl) {
         console.log('Scrolled to top, fetching older messages...');
         try {
@@ -222,7 +181,6 @@ function appendMessage(e) {
  */
 function prependMessage(e) {
     const messageHTML = createMessageHTML(e);
-    // The marker is at the end, so insert before it.
     topMarker.insertAdjacentHTML('beforebegin', messageHTML);
 }
 

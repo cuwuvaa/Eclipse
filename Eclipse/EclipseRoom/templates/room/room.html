@@ -20,12 +20,7 @@
 
 
 {% if is_participant %}
-<h1>you are a participant</h1>
-{% else %}
-<form method="POST">
-    {% csrf_token %}
-    <button name="join">join</button>
-</form>
+<h1>you are a participant, {{user.displayname}}</h1>
 {% endif %}
 
 <div id="messages" style="border: 2px solid black; padding: 10px; height: 500px; overflow-y: auto; display: flex; flex-direction: column-reverse;">

@@ -1,19 +1,17 @@
-
-
 async function init() {
-    const response = await fetch(`${localhost}api/rooms/${roomId}/users/`);
-    if (response.status === 403) {
-        console.log("join server!");
-        return
-    };
+    try {
+        console.log("Waiting for handshake...");
+        await handshakePromise;
+        console.log("Handshake complete, proceeding with initialization.");
+        
+        await renderMembers();
+        await renderMessages();
 
-    setTimeout(() => {
-    renderMembers();
-    renderMessages();
-    }, 1000);
+        console.log("Initialization complete.");
 
-
+    } catch (error) {
+        console.error("Initialization failed:", error);
+    }
 }
 
 init();
-

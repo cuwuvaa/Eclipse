@@ -1,13 +1,10 @@
-let btnSendMessage = document.getElementById("message_send")
-let inMessage = document.getElementById("message_input")
-let messageContainer = document.getElementById("messages")
-
-let userContainer = document.getElementById("voice_participants")
-let btnConnect = document.getElementById("connect_call")
-let btnDisconnect = document.getElementById("disconnect_call")
-
-let btnCam = document.getElementById("toggle_cam")
-let btnMic = document.getElementById("toggle_mic")
-let btnDemo = document.getElementById("toggle_demo")
-
-let membersContainer = document.getElementById("room_members");
+const btnSendMessage = document.getElementById('message_send');
+const inMessage = document.getElementById('message_input');
+const messageContainer = document.getElementById('messages');
+const userContainer = document.getElementById('voice_participants');
+const btnConnect = document.getElementById('connect_call');
+const btnDisconnect = document.getElementById('disconnect_call');
+const btnCam = document.getElementById('toggle_cam');
+const btnMic = document.getElementById('toggle_mic');
+const btnDemo = document.getElementById('toggle_demo');
+const membersContainer = document.getElementById('room_members');

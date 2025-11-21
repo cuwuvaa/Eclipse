@@ -29,21 +29,28 @@ class RoomCreate(LoginRequiredMixin, View):
                 room=room, 
                 role=RoomUser.ROLE_CREATOR
             )
-            return redirect("rooms:room", pk=room.id)
+            return redirect("rooms:room", room_pk=room.id)
         
 class RoomPage(LoginRequiredMixin, View):
     
-    def get(self, request, pk):
-        room = Room.objects.get(id=pk)
+    def get(self, request, room_pk):
+        room = Room.objects.get(id=room_pk)
         participants = RoomUser.objects.filter(room=room)
         is_participant = participants.filter(user=request.user).exists()
-        return render(request, "room/room.html", context={
-            "room": room,
-            "participants": participants,
-            "is_participant": is_participant
-        })
-    
-    def post(self, request, pk):
-        if 'join' in request.POST:
-            RoomUser.objects.get_or_create(user=request.user, room_id=pk)
-            return redirect("rooms:room", pk=pk)
+        if (is_participant):
+            return render(request, "room/room.html", context={
+                "room": room,
+                "is_participant": is_participant
+            })
+        else:
+            return redirect("rooms:room_join", room_pk=room_pk)
+        
+class RoomJoin(LoginRequiredMixin, View):
+    def get(self, request, room_pk):
+        room = Room.objects.get(id=room_pk)
+        return render(request, "room/enter.html", context={"room":room})
+
+    def post(self,request, room_pk):
+        new_user = RoomUser(room_id=room_pk, user=request.user)
+        new_user.save()
+        return redirect("rooms:room", room_pk=room_pk)

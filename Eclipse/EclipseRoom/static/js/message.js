@@ -2,12 +2,9 @@ btnSendMessage.addEventListener("click", async function(){
     let content = inMessage.value;
     if (content.trim() === '') return; // Do not send empty messages
     
-    console.log("sending message: ", content);
     sendActionSocket("user_message", content);
-    inMessage.value = '';
+    clearMessageInput();
 });
-
-
 
 function getCSRFToken() {
     const name = 'csrftoken';
@@ -27,57 +24,52 @@ function getCSRFToken() {
 
 function deleteMessage(messageId){
     fetch(`${localhost}api/rooms/${roomId}/messages/${messageId}/delete/`,{
-    method: 'DELETE',
-    headers: 
-        {
+        method: 'DELETE',
+        headers: {
             'X-CSRFToken': getCSRFToken(),
             'Content-Type': 'application/json',
         },
-    }).then(response => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.text();
     })
-    sendActionSocket("delete_message",{"id":messageId});
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        sendActionSocket("delete_message", {"id": messageId});
+    })
+    .catch(error => console.error('Failed to delete message:', error));
 }
-
-//перенести в другой файл
 
 function kickUser(userId){
     fetch(`${localhost}api/rooms/${roomId}/users/${userId}/delete/`,{
-    method: 'DELETE',
-    headers: 
-        {
+        method: 'DELETE',
+        headers: {
             'X-CSRFToken': getCSRFToken(),
             'Content-Type': 'application/json',
         },
-    }).then(response => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.text();
     })
-    sendActionSocket("kick_user",{"id":userId});
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        sendActionSocket("kick_user", {"id": userId});
+    })
+    .catch(error => console.error('Failed to kick user:', error));
 }
 
-function changeRole(userId,role)
-{
-    console.log(role);
+function changeRole(userId, role) {
     fetch(`${localhost}api/rooms/${roomId}/users/${userId}/role/`,{
-    method: 'PATCH',
-    headers: 
-        {
+        method: 'PATCH',
+        headers: {
             'X-CSRFToken': getCSRFToken(),
             'Content-Type': 'application/json',
         },
-    body: JSON.stringify({  
-            "role": role
-        })
-    }).then(response => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.text();
+        body: JSON.stringify({ "role": role })
     })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        // The server should broadcast this change, and ws.js will handle the UI update.
+    })
+    .catch(error => console.error('Failed to change role:', error));
 }

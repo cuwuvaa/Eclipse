@@ -1,37 +1,67 @@
 // --- State for Message Pagination ---
 let nextMessagesUrl = null;
+const topMarker = document.getElementById('topMarker');
 
-// --- Functions from call.js ---
+// --- UI Update Functions ---
 
-/**
- * Renders a user's name in the voice participants list.
- * @param {object} e - User data object with username/displayname and id.
- */
-async function renderUser(e) {
-    if (userContainer && !document.getElementById(`user-${e.id}`)) {
-        const userDiv = document.createElement('div')
-        const userElement = document.createElement('h1');
-        if (userdata.role == "moderator" || userdata.role == "creator" && userdata.id != e.id)
-        {
-            const kickBtn = document.createElement("button")
-            kickBtn.innerText = `kick ${e.displayname}`
-            kickBtn.addEventListener('click', ()=> {
-                sendActionSocket("voice_kick", {"id":e.id})
-            })
-            userDiv.appendChild(kickBtn);
-        }
-        userElement.textContent = e.username || e.displayname;
-        userDiv.id = `user-${e.id}`;
-        userDiv.appendChild(userElement);
-        userContainer.appendChild(userDiv);
+function updateCallButtons(isConnected) {
+    btnConnect.style.display = isConnected ? 'none' : 'inline-block';
+    btnDisconnect.style.display = isConnected ? 'inline-block' : 'none';
+    btnMic.style.display = isConnected ? 'inline-block' : 'none';
+    btnCam.style.display = isConnected ? 'inline-block' : 'none';
+    btnDemo.style.display = isConnected ? 'inline-block' : 'none';
+    btnConnect.disabled = isConnected;
+}
+
+function updateMicButton(isMuted) {
+    btnMic.innerText = isMuted ? "Unmute" : "Mute";
+}
+
+function updateCamButton(isOff) {
+    btnCam.innerText = isOff ? "Camera on" : "Camera off";
+}
+
+function updateDemoButton(isOff) {
+    btnDemo.innerText = isOff ? "Screen on" : "Stop Screen Share";
+}
+
+function clearMessageInput() {
+    inMessage.value = '';
+}
+
+function removeElementById(id) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.remove();
     }
 }
-/**
- * Shows or hides the local video element.
- * @param {boolean} status - If true, shows the video; otherwise, removes it.
- */
-async function showLocalVideo(status) {
-    console.log("ui local handle")
+
+function reloadPage() {
+    window.location.reload();
+}
+
+// --- DOM Creation Functions ---
+
+function createRemoteAudio(stream, peerId) {
+    const remoteAudio = document.createElement('audio');
+    remoteAudio.id = `remote-audio-${peerId}`;
+    remoteAudio.srcObject = stream;
+    remoteAudio.autoplay = true;
+    document.getElementById('remote-media-container').appendChild(remoteAudio);
+}
+
+function createRemoteVideo(stream, peerId, status) {
+    const remoteVideo = document.createElement('video');
+    remoteVideo.id = `remote-video-${peerId}`;
+    remoteVideo.srcObject = stream;
+    remoteVideo.autoplay = true;
+    if (!status) {
+        remoteVideo.style.display = 'none';
+    }
+    document.getElementById('remote-media-container').appendChild(remoteVideo);
+}
+
+function showLocalVideo(status) {
     const localVideoContainer = document.getElementById('local-video-container');
     localVideoContainer.innerHTML = ''; // Clear the container
     if (status) {
@@ -47,48 +77,92 @@ async function showLocalVideo(status) {
     }
 }
 
-// --- Functions from message.js ---
-
-/**
- * Fetches data from a given URL.
- * @param {string} url - The URL to fetch data from.
- * @returns {Promise<object|null>} - The fetched data as a JSON object, or null on error.
- */
-
-async function fetchdata(url) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.log('Error fetching data');
-        return null;
-        
+function toggleRemoteVideo(userId, show) {
+    const remoteVideo = document.getElementById(`remote-video-${userId}`);
+    if (remoteVideo) {
+        remoteVideo.style.display = show ? "block" : "none";
     }
 }
 
 
-/**
- * Fetches the first page of messages and sets up the scroll listener.
- */
+// --- User and Message Rendering ---
 
-const topMarker = document.getElementById('topMarker');
+async function renderUser(e) {
+    if (userContainer && !document.getElementById(`user-${e.id}`)) {
+        const userDiv = document.createElement('div');
+        const userElement = document.createElement('h1');
+        if ((userdata.role === "moderator" || userdata.role === "creator") && userdata.id !== e.id) {
+            const kickBtn = document.createElement("button");
+            kickBtn.innerText = `kick ${e.displayname}`;
+            kickBtn.onclick = () => sendActionSocket("voice_kick", { "id": e.id });
+            userDiv.appendChild(kickBtn);
+        }
+        userElement.textContent = e.username || e.displayname;
+        userDiv.id = `user-${e.id}`;
+        userDiv.appendChild(userElement);
+        userContainer.appendChild(userDiv);
+    }
+}
+
+async function renderMembers() {
+    try {
+        const roomUsers = await fetchdata(`${localhost}api/rooms/${roomId}/users/`);
+        if (!roomUsers) return;
+
+        membersContainer.innerHTML = ''; // Clear existing members
+        for (const element of roomUsers) {
+            let role, action;
+            if (element.role === "moderator") {
+                role = "user";
+                action = "demote";
+            } else {
+                action = "promote";
+                role = "moderator";
+            }
+
+            const memberdiv = document.createElement("div");
+            memberdiv.id = `profile-${element.id}`;
+            
+            let membernameHTML = `<h1>ID: ${element.id} | ${element.displayname}`;
+            if (element.user === userdata.user) {
+                membernameHTML += ` (You)`;
+            }
+            membernameHTML += `</h1><h2>role: ${element.role}</h2>`;
+            memberdiv.innerHTML = membernameHTML;
+
+            if (element.user !== userdata.user) {
+                 switch (userdata.role) {
+                    case "creator":
+                        memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
+                        if (element.role !== 'creator') {
+                           memberdiv.innerHTML += `<button onclick="changeRole(${element.id},'${role}')">${action} to ${role}</button>`;
+                        }
+                        break;
+                    case "moderator":
+                        if (element.role !== "creator" && element.role !== "moderator") {
+                            memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
+                        }
+                        break;
+                }
+            }
+            membersContainer.appendChild(memberdiv);
+        }
+    } catch (error) {
+        console.log("Error loading users", error);
+    }
+}
+
+
 async function renderMessages() {
-    // Clear container but keep the marker
     messageContainer.innerHTML = '';
     messageContainer.appendChild(topMarker);
 
     try {
         const data = await fetchdata(`${localhost}api/rooms/${roomId}/messages/`);
         if (data) {
-            nextMessagesUrl = data.next; 
+            nextMessagesUrl = data.next;
             const messages = data.results;
-            messages.reverse().forEach(message => {
-                appendMessage(message); 
-            });
+            messages.reverse().forEach(message => prependMessage(message)); // Prepend to keep order correct
             
             messageContainer.scrollTop = messageContainer.scrollHeight;
 
@@ -97,33 +171,23 @@ async function renderMessages() {
                     handleMessageScroll();
                 }
             });
-
             observer.observe(topMarker);
         }
-    }
-    catch (error)
-    {
-        console.log("error occured! join server");
+    } catch (error) {
+        console.log("Error rendering messages", error);
     }
 }
 
-/**
- * Handles the scroll event on the message container to fetch older messages.
- */
 async function handleMessageScroll() {
-    console.log("ui msg handle")
     if (nextMessagesUrl) {
-        console.log('Scrolled to top, fetching older messages...');
         try {
             const data = await fetchdata(nextMessagesUrl);
             if (data) {
                 nextMessagesUrl = data.next;
                 const olderMessages = data.results;
-                olderMessages.forEach(message => {
-                    prependMessage(message);
+                olderMessages.reverse().forEach(message => {
+                    prependMessage(message, false); // Prepend older messages without scrolling
                 });
-                // Move the marker to the new top (which is the end of the container)
-                messageContainer.appendChild(topMarker);
             }
         } catch (error) {
             console.error('Error fetching older messages:', error);
@@ -131,106 +195,46 @@ async function handleMessageScroll() {
     }
 }
 
-/**
- * Creates the HTML string for a single message.
- * @param {object} e - Message data object.
- * @returns {string} - The HTML string for the message.
- */
 function createMessageHTML(e) {
-    let messageDiv = `<div id="message-${e.id}"" class="message-item" style="width: max-content; border: 1px solid #ccc; margin: 5px; padding: 5px;">`
-
+    let messageDiv = `<div id="message-${e.id}" class="message-item" style="width: max-content; border: 1px solid #ccc; margin: 5px; padding: 5px;">`;
     messageDiv += `<h3>${e.displayname} | ${e.role}</h3>
-                <h4>${new Date(e.timestamp).toLocaleString()}</h4>
-                <h2>${e.text}</h2>`
-    
+                   <h4>${new Date(e.timestamp).toLocaleString()}</h4>
+                   <h2>${e.text}</h2>`;
 
-    switch (userdata.role)
-    {
-        case "creator":
-            messageDiv += `<button onclick="deleteMessage(${e.id})">delete</button>`
-            break;
-        case "moderator":
-            if (e.role != "creator")
-            {
-            messageDiv += `<button onclick="deleteMessage(${e.id})">delete</button>`
-            }
-            break;
-        case "user":
-            if (e.roomsender_id == userdata.id)
-            {
-            messageDiv += `<button onclick="deleteMessage(${e.id})">delete</button>`
-            }
-            break;
+    const canDelete = (userdata.role === "creator" && e.role !== "creator") ||
+                      (userdata.role === "moderator" && e.role === "user") ||
+                      (e.roomsender_id === userdata.id);
+
+    if (canDelete) {
+        messageDiv += `<button onclick="deleteMessage(${e.id})">delete</button>`;
     }
-    messageDiv += `</div>`
+    messageDiv += `</div>`;
     return messageDiv;
 }
 
-/**
- * Appends a new message to the bottom of the container.
- * @param {object} e - Message data object.
- */
 function appendMessage(e) {
     const messageHTML = createMessageHTML(e);
-    messageContainer.insertAdjacentHTML('afterbegin', messageHTML);
+    messageContainer.insertAdjacentHTML('beforeend', messageHTML);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
-/**
- * Prepends an older message to the top of the container.
- * @param {object} e - Message data object.
- */
 function prependMessage(e) {
     const messageHTML = createMessageHTML(e);
-    topMarker.insertAdjacentHTML('beforebegin', messageHTML);
+    topMarker.insertAdjacentHTML('afterend', messageHTML);
 }
 
-async function renderMembers() {
-    try{await fetchdata(`${localhost}api/rooms/${roomId}/users/`).then((roomUsers) => {for (element of roomUsers){
-        let role;
-        let action;
-        if (element.role == "moderator")
-        {
-            role = "user"
-            action = "reduce"
+
+// --- Data Fetching ---
+
+async function fetchdata(url) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Error status: ${response.status}`);
         }
-        else {
-            action = "upper"
-            role = "moderator"
-        }
-        let memberdiv = document.createElement("div")
-        memberdiv.id = `profile-${element.id}`
-        let membername = document.createElement("h1")
-        membername.innerHTML = `ID: ${element.id} | ${element.displayname} `
-        memberdiv.appendChild(membername);
-        membersContainer.appendChild(memberdiv);
-        if (element.user === userdata.user)
-        {
-            membername.innerHTML += `(You)`;
-            memberdiv.innerHTML += `            
-                <h2>role: ${element.role}</h1> 
-            `
-            continue;
-        }
-        memberdiv.innerHTML += `            
-            <h2>role: ${element.role}</h1> 
-        `
-        switch (userdata.role){
-            case "creator":
-                memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
-                memberdiv.innerHTML += `<button onclick="changeRole(${element.id},'${role}')">${action} role</button>`;
-                break;
-            case "moderator":
-                if (element.role != "creator")
-                {
-                    memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
-                }
-                break;
-        }
-    };
-    })}
-    catch (error)
-    {
-        console.log("error loading users");
-        console.log(error)
+        return await response.json();
+    } catch (error) {
+        console.log('Error fetching data:', error);
+        return null;
     }
 }

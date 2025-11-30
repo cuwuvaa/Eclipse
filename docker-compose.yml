@@ -1,0 +1,42 @@
+services:
+  web:
+    build: ./Eclipse
+    working_dir: /usr/src/Eclipse/
+    command: daphne -b 0.0.0.0 -p 8000 Eclipse.asgi:application
+    volumes:
+      - ./Eclipse:/usr/src/Eclipse/
+      - static_volume:/usr/src/Eclipse/staticfiles
+    expose:
+      - 8000
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - ./Eclipse/.env
+      - ./.env.db
+
+  db:
+    image: postgres:18.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env.db
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "1337:80"
+    volumes:
+      - static_volume:/usr/src/Eclipse/staticfiles
+    depends_on:
+      - web
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+volumes:
+  postgres_data:
+  static_volume:
+  redis_data:

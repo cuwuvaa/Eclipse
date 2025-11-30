@@ -46,7 +46,7 @@ ws.onmessage = async function(event) {
             break;
         
         case "user_update":
-            renderMembers();
+            updateUser(data.user, true);
             break;
 
         case "kick_user":
@@ -71,6 +71,7 @@ ws.onmessage = async function(event) {
             } else {
                 removeElementById(`user-${data.user.id}`);
             }
+            updateUser(data.user,false);
             break;
 
         case 'offer':

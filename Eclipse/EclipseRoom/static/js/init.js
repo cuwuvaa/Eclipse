@@ -6,7 +6,6 @@ async function init() {
         
         await renderMembers();
         await renderMessages();
-
         console.log("Initialization complete.");
 
     } catch (error) {

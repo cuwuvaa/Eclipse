@@ -1,4 +1,7 @@
+{% extends "main/base.html" %}
 {% load static %}
+
+{% block content %}
 <h1>this is room {{room.name}}</h1>
 <h2>about us: {{room.description}}</h2>
 
@@ -43,3 +46,5 @@
 <script src="{% static 'js/message.js' %}"></script>
 <script src="{% static 'js/call.js' %}"></script>
 <script src="{% static 'js/init.js' %}"></script>
+
+{% endblock %}

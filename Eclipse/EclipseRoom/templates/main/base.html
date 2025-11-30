@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}ECLIPSE{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/base.css' %}" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">
+        <div class="dot"></div>
+        <a class="logo-text" id="logo-text">ECLIPSE</a>
+      </div>
+
+      <nav class="nav">
+        <a href="" class="nav-link active">Rooms</a>
+      </nav>
+
+      <div class="user">
+        <div class="status"></div>
+        <span class="username">{{user.displayname}}</span>
+      </div>
+    </header>
+
+    <main>
+      {% block content %}
+
+      {% endblock %}
+    </main>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <p>&copy; 2025 ECLIPSE. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Contact Us</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

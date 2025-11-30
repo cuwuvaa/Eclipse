@@ -119,7 +119,7 @@ async function renderMembers() {
                 action = "promote";
                 role = "moderator";
             }
-
+            let is_online = element.is_online ? "онлайн" : "оффлайн"
             const memberdiv = document.createElement("div");
             memberdiv.id = `profile-${element.id}`;
             
@@ -145,11 +145,61 @@ async function renderMembers() {
                         break;
                 }
             }
+            memberdiv.innerHTML += `<h5 id="status-${element.id}">${is_online}</h5>`
             membersContainer.appendChild(memberdiv);
         }
     } catch (error) {
         console.log("Error loading users", error);
     }
+}
+
+async function updateUser(element, status) {
+    try
+    {
+        document.getElementById(`profile-${element.id}`)
+        let is_online = status ? "онлайн" : "оффлайн"
+        document.getElementById(`status-${element.id}`).innerText = is_online
+    }
+    catch(error)
+    {
+            let role, action;
+            if (element.role === "moderator") {
+                role = "user";
+                action = "demote";
+            } else {
+                action = "promote";
+                role = "moderator";
+            }
+            let is_online = element.is_online ? "онлайн" : "оффлайн"
+            const memberdiv = document.createElement("div");
+            memberdiv.id = `profile-${element.id}`;
+            
+            let membernameHTML = `<h1>ID: ${element.id} | ${element.displayname}`;
+            if (element.user === userdata.user) {
+                membernameHTML += ` (You)`;
+            }
+            membernameHTML += `</h1><h2>role: ${element.role}</h2>`;
+            memberdiv.innerHTML = membernameHTML;
+
+            if (element.user !== userdata.user) {
+                 switch (userdata.role) {
+                    case "creator":
+                        memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
+                        if (element.role !== 'creator') {
+                           memberdiv.innerHTML += `<button onclick="changeRole(${element.id},'${role}')">${action} to ${role}</button>`;
+                        }
+                        break;
+                    case "moderator":
+                        if (element.role !== "creator" && element.role !== "moderator") {
+                            memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
+                        }
+                        break;
+                }
+            }
+            memberdiv.innerHTML += `<h5 id="status-${element.id}">${is_online}</h5>`
+            membersContainer.appendChild(memberdiv);
+    }
+
 }
 
 
@@ -176,6 +226,7 @@ async function renderMessages() {
     } catch (error) {
         console.log("Error rendering messages", error);
     }
+    sendActionSocket("status","online")
 }
 
 async function handleMessageScroll() {

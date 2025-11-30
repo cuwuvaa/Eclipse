@@ -32,7 +32,7 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = ["*"]
 
-
+CSRF_TRUSTED_ORIGINS = ['http://localhost:1337']
 # Application definition
 
 INSTALLED_APPS = [
@@ -84,21 +84,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Eclipse.wsgi.application'
 ASGI_APPLICATION = 'Eclipse.asgi.application'
 
-CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer"
-        }
-    }
-
-#REDISKA
 # CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [(redis_info.hostname, redis_info.port)],
-#         },
-#     },
-# }
+#         "default": {
+#             "BACKEND": "channels.layers.InMemoryChannelLayer"
+#         }
+#     }
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],  # имя сервиса из docker-compose
+        },
+    },
+}
+
+#КЭШ ПОТОМ ЗАВЕЗУ ХУЛЕ
+
 
 
 # Database
@@ -106,8 +108,12 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'PORT': os.environ.get('POSTGRES_PORT'),
     }
 }
 
@@ -147,6 +153,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -13,8 +13,8 @@ from EclipseRoom.models.roomuser import RoomUser
 import asyncio
 import logging
 
-# ДА БЛЯ ЭТОТ ЛОГГЕР ПРИШЛОСЬ РЕАЛЬНО НАВАЙБКОДИТЬ ХУЛЕ
-# Настройка логгера (опционально, но удобнее чем print)
+# YES, I HAD TO REALLY CODE THIS LOGGER
+# Logger setup (optional, but more convenient than print)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 if not logger.handlers:
@@ -22,19 +22,19 @@ if not logger.handlers:
     handler.setFormatter(logging.Formatter('[%(asctime)s] %(message)s'))
     logger.addHandler(handler)
 
-# Глобальная переменная (уже есть у вас)
+# Global variable (you already have this)
 room_connections = defaultdict(dict)
 streaming = defaultdict()
 
-# Флаг, чтобы не запускать задачу много раз
+# Flag to avoid starting the task multiple times
 _print_task_started = False
 
 async def _print_room_connections_periodically():
-    """Фоновая задача: выводит room_connections каждую секунду."""
+    """Background task: prints room_connections every second."""
     while True:
-        # Красивый вывод: только непустые комнаты
+        # Nice output: only non-empty rooms
         snapshot = {
-            room_id: list(users.keys())  # только IDs пользователей
+            room_id: list(users.keys())  # only user IDs
             for room_id, users in room_connections.items()
             if users
         }
@@ -45,7 +45,7 @@ async def _print_room_connections_periodically():
         await asyncio.sleep(1)
 
 def start_monitoring():
-    """Запускает фоновую задачу, если ещё не запущена."""
+    """Starts the background task if it's not already running."""
     global _print_task_started
     if not _print_task_started:
         loop = asyncio.get_event_loop()
@@ -54,7 +54,7 @@ def start_monitoring():
             _print_task_started = True
             logger.info("✅ Monitoring room_connections started (every 1s).")
         else:
-            # Если loop ещё не запущен (редко в Channels), отложим запуск
+            # If the loop is not yet running (rare in Channels), defer the start
             asyncio.ensure_future(_print_room_connections_periodically())
             _print_task_started = True
 

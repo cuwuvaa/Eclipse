@@ -14,15 +14,15 @@ function updateCallButtons(isConnected) {
 }
 
 function updateMicButton(isMuted) {
-    btnMic.innerText = isMuted ? "Unmute" : "Mute";
+    btnMic.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
 }
 
 function updateCamButton(isOff) {
-    btnCam.innerText = isOff ? "Camera on" : "Camera off";
+    btnCam.innerHTML = isOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
 }
 
 function updateDemoButton(isOff) {
-    btnDemo.innerText = isOff ? "Screen on" : "Stop Screen Share";
+    btnDemo.innerHTML = isOff ? '<i class="fas fa-desktop"></i>' : '<i class="fas fa-stop"></i>';
 }
 
 function clearMessageInput() {
@@ -90,6 +90,33 @@ function toggleRemoteVideo(userId, show) {
 
 // --- User and Message Rendering ---
 
+function createActionWindow(element, buttons) {
+    let timeoutId;
+
+    element.addEventListener('mouseenter', () => {
+        timeoutId = setTimeout(() => {
+            const actionWindow = document.createElement('div');
+            actionWindow.className = 'action-window';
+            buttons.forEach(button => {
+                const btn = document.createElement('button');
+                btn.className = 'small-btn';
+                btn.innerText = button.text;
+                btn.onclick = button.onClick;
+                actionWindow.appendChild(btn);
+            });
+            element.appendChild(actionWindow);
+        }, 500);
+    });
+
+    element.addEventListener('mouseleave', () => {
+        clearTimeout(timeoutId);
+        const actionWindow = element.querySelector('.action-window');
+        if (actionWindow) {
+            actionWindow.remove();
+        }
+    });
+}
+
 async function renderUser(e) {
     if (userContainer && !document.getElementById(`user-${e.id}`)) {
         const userDiv = document.createElement('div');
@@ -106,10 +133,10 @@ async function renderUser(e) {
         userDiv.appendChild(userElement);
 
         if ((userdata.role === "moderator" || userdata.role === "creator") && userdata.id !== e.id) {
-            const kickBtn = document.createElement("button");
-            kickBtn.innerText = `kick`;
-            kickBtn.onclick = () => sendActionSocket("voice_kick", { "id": e.id });
-            userDiv.appendChild(kickBtn);
+            const buttons = [
+                { text: 'Kick from voice', onClick: () => sendActionSocket("voice_kick", { "id": e.id }) }
+            ];
+            createActionWindow(userDiv, buttons);
         }
         userContainer.appendChild(userDiv);
     }
@@ -143,19 +170,21 @@ async function renderMembers() {
             memberdiv.innerHTML = membernameHTML;
 
             if (element.user !== userdata.user) {
+                 const buttons = [];
                  switch (userdata.role) {
                     case "creator":
-                        memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
+                        buttons.push({ text: 'Kick from room', onClick: () => kickUser(element.id) });
                         if (element.role !== 'creator') {
-                           memberdiv.innerHTML += `<button onclick="changeRole(${element.id},'${role}')">${action} to ${role}</button>`;
+                           buttons.push({ text: `${action} to ${role}`, onClick: () => changeRole(element.id, role) });
                         }
                         break;
                     case "moderator":
                         if (element.role !== "creator" && element.role !== "moderator") {
-                            memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
+                            buttons.push({ text: 'Kick from room', onClick: () => kickUser(element.id) });
                         }
                         break;
                 }
+                createActionWindow(memberdiv, buttons);
             }
             memberdiv.innerHTML += `<h5 id="status-${element.id}" class="${is_online}">${is_online}</h5>`
             membersContainer.appendChild(memberdiv);
@@ -262,31 +291,36 @@ async function handleMessageScroll() {
 }
 
 function createMessageHTML(e) {
-    let messageDiv = `<div id="message-${e.id}" class="message-item">`;
-    messageDiv += `<h3>${e.displayname} | ${e.role}</h3>
-                   <h4>${new Date(e.timestamp).toLocaleString()}</h4>
-                   <h2>${e.text}</h2>`;
+    const messageDiv = document.createElement('div');
+    messageDiv.id = `message-${e.id}`;
+    messageDiv.className = 'message-item';
+
+    messageDiv.innerHTML = `<h3>${e.displayname} | ${e.role}</h3>
+                            <h4>${new Date(e.timestamp).toLocaleString()}</h4>
+                            <h2>${e.text}</h2>`;
 
     const canDelete = (userdata.role === "creator" && e.role !== "creator") ||
                       (userdata.role === "moderator" && e.role === "user") ||
                       (e.roomsender_id === userdata.id);
 
     if (canDelete) {
-        messageDiv += `<button onclick="deleteMessage(${e.id})">delete</button>`;
+        const buttons = [
+            { text: 'Delete', onClick: () => deleteMessage(e.id) }
+        ];
+        createActionWindow(messageDiv, buttons);
     }
-    messageDiv += `</div>`;
     return messageDiv;
 }
 
 function appendMessage(e) {
     const messageHTML = createMessageHTML(e);
-    messageContainer.insertAdjacentHTML('beforeend', messageHTML);
+    messageContainer.appendChild(messageHTML);
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
 function prependMessage(e) {
     const messageHTML = createMessageHTML(e);
-    topMarker.insertAdjacentHTML('afterend', messageHTML);
+    topMarker.after(messageHTML);
 }
 
 

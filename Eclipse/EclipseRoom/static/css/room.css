@@ -14,14 +14,14 @@
 
 .chat-section {
   grid-row: 1;
-  height: 60%;
+  height: 70%;
   display: flex;
   flex-direction: column;
 }
 
 .room-members-section {
   grid-row: 2;
-  height: 40%;
+  height: 30%;
 }
 
 .voice-call-section, .chat-section, .room-members-section {
@@ -47,12 +47,17 @@
 }
 
 .media-controls .btn {
-  padding: 10px 20px;
+  width: 40px;
+  height: 40px;
+  padding: 10px;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .btn-success { background-color: #4CAF50; color: white; }
@@ -79,6 +84,7 @@
   text-align: center;
   border: 1px solid var(--border);
   transition: all 0.3s;
+  position: relative;
 }
 
 .participant-card:hover {
@@ -118,7 +124,7 @@
 }
 
 #messages {
-  flex-grow: 1;
+  height: 400px;
   overflow-y: auto;
   padding: 10px;
   border: 1px solid var(--border);
@@ -135,11 +141,13 @@
   background-color: rgba(0,0,0,0.2);
   width: max-content;
   max-width: 90%;
+  position: relative;
 }
 
 .message-item h3 { font-size: 1.1rem; font-weight: 700; color: var(--amber); }
 .message-item h4 { font-size: 0.8rem; color: var(--dim); margin-bottom: 8px; }
 .message-item h2 { font-size: 1rem; font-weight: normal; }
+
 
 .message-input-area {
   display: flex;
@@ -176,6 +184,7 @@
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid var(--border);
+  position: relative;
 }
 
 .member-card h1 { font-size: 1.1rem; }
@@ -183,3 +192,49 @@
 .member-card h5 { font-size: 0.8rem; }
 .online { color: #4CAF50; }
 .offline { color: #f44336; }
+
+.small-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  background-color: var(--purple);
+  color: var(--text);
+  margin-left: 5px;
+  transform: scale(0);
+  transform-origin: right;
+}
+
+.message-item:hover .small-btn,
+.participant-card:hover .small-btn,
+.member-card:hover .small-btn {
+    transform: scale(1);
+}
+
+.small-btn:hover {
+    transform: scale(1.1) translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.action-window {
+    position: fixed;
+    background-color: rgba(18, 10, 32, 0.8);
+    backdrop-filter: blur(5px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+    transition: all 0.3s ease-in-out;
+}
+
+.message-item:hover .action-window,
+.participant-card:hover .action-window,
+.member-card:hover .action-window {
+    display: flex;
+}

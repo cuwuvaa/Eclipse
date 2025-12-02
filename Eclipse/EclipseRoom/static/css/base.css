@@ -18,7 +18,7 @@
 /* ===== BACKGROUND ===== */
 body {
   background: 
-    /* Полукруг слева */
+    /* Semicircle on the left */
     radial-gradient(circle at 0% 50%, 
       rgba(126, 87, 194, 0.25) 0%,
       rgba(126, 87, 194, 0.1) 40%,
@@ -77,6 +77,11 @@ body {
   letter-spacing: -1px;
   position: relative;
   animation: logo-breathe 6s ease-in-out infinite;
+  color: var(--text);
+}
+
+a {
+  text-decoration: none;
 }
 
 @keyframes logo-breathe {

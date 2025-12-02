@@ -17,14 +17,29 @@
 
   <section class="rooms-section">
     <div class="toolbar">
-      <div class="search-bar">
+      <form method="get" action="{% url 'rooms:main' %}" class="search-bar">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" class="search-input" placeholder="Search for rooms...">
-      </div>
+        <input type="text" name="q" class="search-input" placeholder="Search for rooms..." value="{{ query|default:'' }}">
+      </form>
+      <button id="join-by-id-btn" class="create-room-btn">
+        <i class="fas fa-hashtag"></i>
+        <span>Join by ID</span>
+      </button>
       <a href="{% url 'rooms:create' %}" class="create-room-btn">
         <i class="fas fa-plus"></i>
         <span>Create Room</span>
       </a>
+    </div>
+
+    <div id="join-by-id-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Enter Room ID</h2>
+        <form id="join-by-id-form">
+          <input type="text" id="room-id-input" placeholder="Enter Room ID...">
+          <button type="submit" class="submit-btn">Join</button>
+        </form>
+      </div>
     </div>
 
     <div class="rooms-grid">
@@ -35,12 +50,13 @@
             <span class="room-id">#{{room.id}}</span>
           </div>
           <div class="room-details">
-            <i class="fas fa-user-friends"></i>
-            <span>{{ room.online }} users online</span>
+            <p>{{ room.description }}</p>
           </div>
         </a>
       {% endfor %}
     </div>
   </section>
-</div>
+{% block extra_js %}
+  <script src="{% static 'js/main.js' %}"></script>
+{% endblock %}
 {% endblock %}

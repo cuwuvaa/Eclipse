@@ -8,10 +8,13 @@ from EclipseRoom.models.roomuser import RoomUser
 # Create your views here.
 
 class Main(View):
-
-    def get(self,request):
-        rooms = Room.objects.all()
-        return render(request, "main/main.html", context={"rooms":rooms})
+    def get(self, request):
+        query = request.GET.get('q')
+        if query:
+            rooms = Room.objects.filter(name__icontains=query)
+        else:
+            rooms = Room.objects.all()
+        return render(request, "main/main.html", context={"rooms": rooms, "query": query})
     
 class RoomCreate(LoginRequiredMixin, View):
     

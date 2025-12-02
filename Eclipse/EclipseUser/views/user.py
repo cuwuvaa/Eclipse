@@ -11,4 +11,12 @@ class Profile(View):
     
 class MyProfile(View):
     def get(self, request):
-        return render(request, "user/profile.html", context={"USER":request.user})
+        return render(request, "user/profile.html", context={"USER": request.user})
+
+    def post(self, request):
+        displayname = request.POST.get('displayname')
+        if displayname:
+            user = request.user
+            user.displayname = displayname
+            user.save()
+        return redirect("users:profile")

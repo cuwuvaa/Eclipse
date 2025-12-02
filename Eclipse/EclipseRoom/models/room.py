@@ -3,19 +3,19 @@ from django.utils import timezone
 
 class Room(models.Model):
     name = models.CharField(
-        'название',
+        'name',
         max_length=50)
 
     description = models.TextField(
-        'описание',
+        'description',
         blank=True,
         null=True)
 
     created_at = models.DateTimeField(
-        'дата создания',
+        'creation date',
         default=timezone.now
           )
 
     class Meta:
-        verbose_name = 'комната'
-        verbose_name_plural = 'комнаты'
+        verbose_name = 'room'
+        verbose_name_plural = 'rooms'

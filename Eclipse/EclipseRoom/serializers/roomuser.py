@@ -4,9 +4,9 @@ from EclipseRoom.models.room import Room
 from EclipseUser.util.redis import is_user_online
 
 class RoomUserProfileSerializer(serializers.ModelSerializer):
-    displayname = serializers.StringRelatedField(source='user')
+    displayname = serializers.StringRelatedField(source='user.displayname')
     is_online = serializers.SerializerMethodField() 
-    role = serializers.ChoiceField(choices=RoomUser.ROLE_CHOICES) # Make role writable
+    role = serializers.ChoiceField(choices=RoomUser.ROLE_CHOICES)
     
     class Meta:
         model = RoomUser

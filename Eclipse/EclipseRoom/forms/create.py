@@ -10,6 +10,13 @@ class RoomCreationForm(forms.ModelForm):
             'placeholder': 'Enter a room name'
         })
     )
+    description = forms.CharField(
+        label='description',
+        widget=forms.Textarea(attrs={
+            'class': 'form-input',
+            'placeholder': 'Enter a description for your room'
+        })
+    )
     class Meta:
         model = room.Room
-        fields = ['name']
+        fields = ['name', 'description']

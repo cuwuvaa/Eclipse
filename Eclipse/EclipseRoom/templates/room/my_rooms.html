@@ -1,0 +1,36 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}ECLIPSE - My Rooms{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <section class="hero">
+    <h1 class="hero-title">My Rooms</h1>
+    <p class="hero-subtitle">Here are all the rooms you have joined.</p>
+  </section>
+
+  <section class="rooms-section">
+    <div class="rooms-grid">
+      {% for room in rooms %}
+        <a href="{% url 'rooms:room' room.id %}" class="room-card">
+          <div class="room-card-header">
+            <h2 class="room-name">{{ room.name }}</h2>
+            <span class="room-id">#{{room.id}}</span>
+          </div>
+          <div class="room-details">
+            <i class="fas fa-user-friends"></i>
+            <span>{{ room.online }} users online</span>
+          </div>
+        </a>
+      {% empty %}
+        <p>You haven't joined any rooms yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

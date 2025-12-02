@@ -54,3 +54,9 @@ class RoomJoin(LoginRequiredMixin, View):
         new_user = RoomUser(room_id=room_pk, user=request.user)
         new_user.save()
         return redirect("rooms:room", room_pk=room_pk)
+
+class MyRooms(LoginRequiredMixin, View):
+    def get(self, request):
+        user_rooms = RoomUser.objects.filter(user=request.user)
+        rooms = [user_room.room for user_room in user_rooms]
+        return render(request, "room/my_rooms.html", context={"rooms": rooms})

@@ -1,0 +1,36 @@
+.logout-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  text-align: center;
+  gap: 24px;
+}
+
+.logout-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.logout-message {
+  font-size: 1.2rem;
+  color: var(--dim);
+}
+
+.login-link-btn {
+  padding: 12px 24px;
+  background: var(--amber);
+  color: #000;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.login-link-btn:hover {
+  background: var(--amber-d);
+  box-shadow: 0 0 12px rgba(255, 158, 109, 0.6);
+  transform: translateY(-2px);
+}

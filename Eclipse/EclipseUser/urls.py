@@ -2,7 +2,7 @@ from django.urls import path
 from EclipseUser.views import auth, user
 
 
-app_name = "user"
+app_name = "users"
 
 urlpatterns = [
     path("register/", auth.RegisterView.as_view(), name="register"),

@@ -16,16 +16,23 @@
     <header class="header">
       <div class="logo">
         <div class="dot"></div>
-        <a class="logo-text" id="logo-text">ECLIPSE</a>
+        <a href="{% url 'rooms:main' %}" class="logo-text" id="logo-text">ECLIPSE</a>
       </div>
 
       <nav class="nav">
         <a href="" class="nav-link active">Rooms</a>
       </nav>
 
-      <div class="user">
-        <div class="status"></div>
-        <span class="username">{{user.displayname}}</span>
+      <div class="user-actions">
+        {% if user.is_authenticated %}
+          <a href="{% url 'users:profile' %}" class="user">
+            <div class="status"></div>
+            <span class="username">{{ user.displayname }}</span>
+          </a>
+        {% else %}
+          <a href="{% url 'users:login' %}" class="nav-link">Login</a>
+          <a href="{% url 'users:register' %}" class="nav-link">Register</a>
+        {% endif %}
       </div>
     </header>
 

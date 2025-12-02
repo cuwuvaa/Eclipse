@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Загружаем .env файл
+# Load .env file
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -94,12 +94,12 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],  # имя сервиса из docker-compose
+            "hosts": [("redis", 6379)],  # service name from docker-compose
         },
     },
 }
 
-#КЭШ ПОТОМ ЗАВЕЗУ ХУЛЕ
+#I'LL ADD CACHE LATER
 
 
 
@@ -160,13 +160,13 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = 'rooms:main'  # Куда перенаправлять после логина
-LOGOUT_REDIRECT_URL = 'user:login' # Куда перенаправлять после логаута
-LOGIN_URL = 'user:login' # URL для логина (для декоратора @login_required)
+LOGIN_REDIRECT_URL = 'rooms:main'  # Where to redirect after login
+LOGOUT_REDIRECT_URL = 'users:login' # Where to redirect after logout
+LOGIN_URL = 'users:login' # URL for login (for @login_required decorator)
 
-# Настройки сессии
-SESSION_COOKIE_AGE = 1209600  # 2 недели в секундах (для "Запомнить меня")
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Сессия закроется при закрытии браузера
+# Session settings
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds (for "Remember me")
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session will close when the browser is closed
 
 # Media files (uploads)
 MEDIA_URL = '/media/'

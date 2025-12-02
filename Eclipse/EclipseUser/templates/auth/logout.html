@@ -1,1 +1,16 @@
-you are logged out
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}ECLIPSE - Logged Out{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/logout.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="logout-container">
+  <h1 class="logout-title">You've Been Logged Out</h1>
+  <p class="logout-message">Thank you for using ECLIPSE. We hope to see you again soon.</p>
+  <a href="{% url 'users:login' %}" class="login-link-btn">Login Again</a>
+</div>
+{% endblock %}

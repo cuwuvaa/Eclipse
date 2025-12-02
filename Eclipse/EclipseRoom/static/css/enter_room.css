@@ -1,0 +1,38 @@
+.enter-room-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  text-align: center;
+  gap: 24px;
+}
+
+.enter-room-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.enter-room-message {
+  font-size: 1.2rem;
+  color: var(--dim);
+}
+
+.join-btn {
+  padding: 12px 24px;
+  background: var(--amber);
+  color: #000;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+}
+
+.join-btn:hover {
+  background: var(--amber-d);
+  box-shadow: 0 0 12px rgba(255, 158, 109, 0.6);
+  transform: translateY(-2px);
+}

@@ -1,5 +1,19 @@
-You are going to join room {{room.name}}
-<form method="POST">
-    {%csrf_token%}
-    <button name="join">Join</button>
-</form>
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}ECLIPSE - Join {{ room.name }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/enter_room.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="enter-room-container">
+  <h1 class="enter-room-title">You are about to join</h1>
+  <p class="enter-room-message">"{{ room.name }}"</p>
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" name="join" class="join-btn">Join Room</button>
+  </form>
+</div>
+{% endblock %}

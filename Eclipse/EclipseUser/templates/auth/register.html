@@ -1,5 +1,44 @@
-<form method="POST">
-    {{form}}
-    {% csrf_token %}
-    <button>Send</button>
-</form>
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}ECLIPSE - Register{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/register.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-form">
+    <h1 class="form-title">Create Account</h1>
+
+    {% if form.errors %}
+      <div class="error-message">
+        {% for field, error_list in form.errors.items %}
+            {% for error in error_list %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="id_username" class="form-label">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="form-group">
+        <label for="id_password1" class="form-label">Password</label>
+        {{ form.password1 }}
+      </div>
+      <div class="form-group">
+        <label for="id_password2" class="form-label">Confirm Password</label>
+        {{ form.password2 }}
+      </div>
+      <button type="submit" class="submit-btn">Register</button>
+    </form>
+    <a href="{% url 'users:login' %}" class="form-switch-link">Already have an account? Login</a>
+  </div>
+</div>
+{% endblock %}

@@ -8,23 +8,23 @@ class UserRegisterForm(UserCreationForm):
         label='username',
         max_length=50,
         widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Как вас зовут?'
+            'class': 'form-input',
+            'placeholder': 'Choose a username'
         })
     )
     password1 = forms.CharField(
         label='password',
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Придумайте пароль',
+            'class': 'form-input',
+            'placeholder': 'Enter a password',
             'autocomplete': 'new-password'
         })
     )
     password2 = forms.CharField(
         label='password confirmation',
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Повторите пароль',
+            'class': 'form-input',
+            'placeholder': 'Confirm your password',
             'autocomplete': 'new-password'
         })
     )
@@ -32,7 +32,7 @@ class UserRegisterForm(UserCreationForm):
     def clean_username(self):
         username = self.cleaned_data['username']
         if ' ' in username:
-            raise ValidationError('имя пользователя не должно содержать пробелов')
+            raise ValidationError('Username should not contain spaces')
         return username
 
     class Meta:
@@ -45,25 +45,17 @@ class UserLoginForm(forms.Form):
     username = forms.CharField(
         label='username',
         widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Как вас зовут?',
+            'class': 'form-input',
+            'placeholder': 'Enter your username',
         })
     )
     password = forms.CharField(
-        label='Пароль',
+        label='Password',
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Введите ваш пароль',
+            'class': 'form-input',
+            'placeholder': 'Enter your password',
             'autocomplete': 'current-password'
         })
-    )
-    remember_me = forms.BooleanField(
-        required=False,
-        initial=False,
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        }),
-        label='Запомнить меня'
     )
 
     def clean(self):
@@ -71,14 +63,14 @@ class UserLoginForm(forms.Form):
         username = cleaned_data.get('username')
         password = cleaned_data.get('password')
 
-        if username and password:             #проверяем существование пользователя
+        if username and password:             #check if user exists
             try:
                 user = EclipseUser.objects.get(username=username)
             except EclipseUser.DoesNotExist:
-                raise ValidationError('username не найден')
+                raise ValidationError('User not found')
 
             if not user.check_password(password):
-                raise ValidationError('неверный пароль')
+                raise ValidationError('Incorrect password')
             cleaned_data['user'] = user
         
         return cleaned_data

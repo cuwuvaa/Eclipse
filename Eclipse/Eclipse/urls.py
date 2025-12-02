@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('user/', include("EclipseUser.urls", namespace="user")),
+    path('users/', include("EclipseUser.urls", namespace="users")),
     path('', include("EclipseRoom.urls", namespace="rooms")),
     path('api/', include("api.urls", namespace="api"))
 ]

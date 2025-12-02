@@ -1,7 +1,27 @@
-<h1>Profile</h1>
-<img src="{{ USER.avatar.url }}">
-<h2>{{USER.username}}</h2>
-<h2>{{USER.displayname}}</h2>
-{% if USER.username == user.username %}
-<a href="{% url 'user:logout'%}">logout</a>
-{% endif %}
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}ECLIPSE - {{ USER.username }}'s Profile{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+  <div class="avatar-section">
+    <img src="{{ USER.avatar.url }}" alt="{{ USER.username }}'s avatar" class="profile-avatar">
+  </div>
+
+  <div class="info-section">
+    <h1 class="profile-username">{{ USER.username }}</h1>
+    <p class="profile-displayname">{{ USER.displayname }}</p>
+  </div>
+
+  {% if USER.username == user.username %}
+  <div class="actions-section">
+    <a href="{% url 'users:logout' %}" class="profile-btn logout-btn">Logout</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -6,7 +6,7 @@ class Profile(View):
     def get(self,request, username):
         user = EclipseUser.objects.get(username=username)
         if username == request.user.username:
-            return redirect("user:profile")
+            return redirect("users:profile")
         return render(request, "user/profile.html", context={"USER":user})
     
 class MyProfile(View):

@@ -1,5 +1,24 @@
-<form method="POST">
-    {% csrf_token %}
-    {{form}}
-    <button>create</button>
-</form>
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}ECLIPSE - Create Room{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/create_room.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="create-room-container">
+  <div class="create-room-form">
+    <h1 class="form-title">Create a New Room</h1>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="id_name" class="form-label">Room Name</label>
+        {{ form.name }}
+      </div>
+      <button type="submit" class="submit-btn">Create Room</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

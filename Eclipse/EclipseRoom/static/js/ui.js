@@ -58,7 +58,10 @@ function createRemoteVideo(stream, peerId, status) {
     if (!status) {
         remoteVideo.style.display = 'none';
     }
-    document.getElementById('remote-media-container').appendChild(remoteVideo);
+    const userCard = document.getElementById(`user-${peerId}`);
+    if (userCard) {
+        userCard.appendChild(remoteVideo);
+    }
 }
 
 function showLocalVideo(status) {
@@ -90,16 +93,24 @@ function toggleRemoteVideo(userId, show) {
 async function renderUser(e) {
     if (userContainer && !document.getElementById(`user-${e.id}`)) {
         const userDiv = document.createElement('div');
+        userDiv.id = `user-${e.id}`;
+        userDiv.className = 'participant-card';
+
+        const userAvatar = document.createElement('img');
+        userAvatar.src = e.avatar;
+        userAvatar.className = 'participant-avatar';
+        userDiv.appendChild(userAvatar);
+
         const userElement = document.createElement('h1');
+        userElement.textContent = e.displayname;
+        userDiv.appendChild(userElement);
+
         if ((userdata.role === "moderator" || userdata.role === "creator") && userdata.id !== e.id) {
             const kickBtn = document.createElement("button");
-            kickBtn.innerText = `kick ${e.displayname}`;
+            kickBtn.innerText = `kick`;
             kickBtn.onclick = () => sendActionSocket("voice_kick", { "id": e.id });
             userDiv.appendChild(kickBtn);
         }
-        userElement.textContent = e.username || e.displayname;
-        userDiv.id = `user-${e.id}`;
-        userDiv.appendChild(userElement);
         userContainer.appendChild(userDiv);
     }
 }
@@ -119,9 +130,10 @@ async function renderMembers() {
                 action = "promote";
                 role = "moderator";
             }
-            let is_online = element.is_online ? "онлайн" : "оффлайн"
+            let is_online = element.is_online ? "online" : "offline";
             const memberdiv = document.createElement("div");
             memberdiv.id = `profile-${element.id}`;
+            memberdiv.className = "member-card";
             
             let membernameHTML = `<h1>ID: ${element.id} | ${element.displayname}`;
             if (element.user === userdata.user) {
@@ -145,7 +157,7 @@ async function renderMembers() {
                         break;
                 }
             }
-            memberdiv.innerHTML += `<h5 id="status-${element.id}">${is_online}</h5>`
+            memberdiv.innerHTML += `<h5 id="status-${element.id}" class="${is_online}">${is_online}</h5>`
             membersContainer.appendChild(memberdiv);
         }
     } catch (error) {
@@ -157,8 +169,10 @@ async function updateUser(element, status) {
     try
     {
         document.getElementById(`profile-${element.id}`)
-        let is_online = status ? "онлайн" : "оффлайн"
-        document.getElementById(`status-${element.id}`).innerText = is_online
+        let is_online = status ? "online" : "offline"
+        const statusElement = document.getElementById(`status-${element.id}`);
+        statusElement.innerText = is_online;
+        statusElement.className = is_online;
     }
     catch(error)
     {
@@ -170,10 +184,11 @@ async function updateUser(element, status) {
                 action = "promote";
                 role = "moderator";
             }
-            let is_online = element.is_online ? "онлайн" : "оффлайн"
+            let is_online = element.is_online ? "online" : "offline"
             const memberdiv = document.createElement("div");
             memberdiv.id = `profile-${element.id}`;
-            
+            memberdiv.className = "member-card";
+
             let membernameHTML = `<h1>ID: ${element.id} | ${element.displayname}`;
             if (element.user === userdata.user) {
                 membernameHTML += ` (You)`;
@@ -196,7 +211,7 @@ async function updateUser(element, status) {
                         break;
                 }
             }
-            memberdiv.innerHTML += `<h5 id="status-${element.id}">${is_online}</h5>`
+            memberdiv.innerHTML += `<h5 id="status-${element.id}" class="${is_online}">${is_online}</h5>`
             membersContainer.appendChild(memberdiv);
     }
 
@@ -247,7 +262,7 @@ async function handleMessageScroll() {
 }
 
 function createMessageHTML(e) {
-    let messageDiv = `<div id="message-${e.id}" class="message-item" style="width: max-content; border: 1px solid #ccc; margin: 5px; padding: 5px;">`;
+    let messageDiv = `<div id="message-${e.id}" class="message-item">`;
     messageDiv += `<h3>${e.displayname} | ${e.role}</h3>
                    <h4>${new Date(e.timestamp).toLocaleString()}</h4>
                    <h2>${e.text}</h2>`;

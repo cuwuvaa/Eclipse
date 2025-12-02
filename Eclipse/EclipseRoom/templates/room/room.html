@@ -1,43 +1,45 @@
 {% extends "main/base.html" %}
 {% load static %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/room.css' %}" />
+{% endblock %}
+
 {% block content %}
-<h1>this is room {{room.name}}</h1>
-<h2>about us: {{room.description}}</h2>
+<div class="room-container">
+  <div class="main-room-content">
+    <div class="chat-section">
+      <h2 class="section-title">Chat</h2>
+      <div id="messages">
+        <div id="topMarker"></div>
+      </div>
+      <div class="message-input-area">
+        <input id="message_input" placeholder="Type a message...">
+        <button id="message_send">Send</button>
+      </div>
+    </div>
+    <div class="room-members-section">
+      <h2 class="section-title">Room Members</h2>
+      <div id="room_members"></div>
+    </div>
+  </div>
 
-
-<h1>VOICE CALL</h1>
-<div class="media-controls">
-    <button id="connect_call" class="btn btn-success">Join Call</button>
-    <button id="disconnect_call" class="btn btn-danger" style="display: none;">Leave Call</button>
-    
-    <button id="toggle_mic" class="btn btn-secondary" style="display: none;">Mute</button>
-    <button id="toggle_cam" class="btn btn-secondary" style="display: none;">Camera on</button>
-    <button id="toggle_demo" class="btn btn-secondary" style="display: none;">Screen on</button>
+  <div class="sidebar">
+    <div class="voice-call-section">
+      <h2 class="section-title">Voice Call</h2>
+      <div class="media-controls">
+        <button id="connect_call" class="btn btn-success">Join Call</button>
+        <button id="disconnect_call" class="btn btn-danger" style="display: none;">Leave Call</button>
+        <button id="toggle_mic" class="btn btn-secondary" style="display: none;">Mute</button>
+        <button id="toggle_cam" class="btn btn-secondary" style="display: none;">Camera ON</button>
+        <button id="toggle_demo" class="btn btn-secondary" style="display: none;">Screen ON</button>
+      </div>
+      <div id="local-video-container"></div>
+      <div id="voice_participants"></div>
+      <div id="remote-media-container"></div>
+    </div>
+  </div>
 </div>
-<div id="local-video-container"></div>
-<div id="voice_participants">
-
-</div>
-<div id="remote-media-container"></div>
-
-
-{% if is_participant %}
-<h1>you are a participant, {{user.displayname}}</h1>
-{% endif %}
-
-<div id="messages" style="border: 2px solid black; padding: 10px; height: 500px; overflow-y: auto; display: flex; flex-direction: column-reverse;">
-    <div id="topMarker"></div>
-    
-</div>
-<input id="message_input">
-<button id="message_send">Send</button>
-
-<div id="room_members">
-
-<div>
-
-
 
 <script src="{% static 'js/config.js' %}"></script>
 <script src="{% static 'js/dom.js' %}"></script>

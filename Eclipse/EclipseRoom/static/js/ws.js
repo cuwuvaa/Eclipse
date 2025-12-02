@@ -14,12 +14,10 @@ ws.onerror = function(error) {
 
 ws.onmessage = async function(event) {
     const data = JSON.parse(event.data);
-    console.log('Received:', data);
 
     // The first message should always be the handshake
     if (data.action === "handshake") {
         userdata = data.profile;
-        console.log("Handshake successful. Userdata received:", userdata);
         handshakeResolver(data); // Resolve the promise so init() can continue
     }
 
@@ -51,8 +49,8 @@ ws.onmessage = async function(event) {
 
         case "kick_user":
             if (data.message.id === userdata.id) {
-                alert("You have been kicked from the room.");
-                reloadPage();
+                alert("You have been kicked from the room by a moderator.");
+                window.location.href = "/";
             } else {
                 removeElementById(`profile-${data.message.id}`);
             }
@@ -88,10 +86,8 @@ ws.onmessage = async function(event) {
 
         case 'voice_kick':
             if (data.id === userdata.id) {
-                console.log("I WAS KICKED FROM VOICE");
                 leaveVoice();
             } else {
-                console.log("Another user was kicked from voice");
                 handleUserLeft(data.id);
             }
             break;

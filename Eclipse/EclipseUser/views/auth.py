@@ -12,7 +12,7 @@ from EclipseUser.forms.auth import UserRegisterForm, UserLoginForm
 class RegisterView(View):
 
     def get(self, request):
-        form = UserRegisterForm #registration form
+        form = UserRegisterForm() #registration form
         context = {
             'form': form,
             'title': 'Registration'
@@ -43,7 +43,7 @@ class RegisterView(View):
 class LoginView(View):
 
     def get(self, request):
-        form = UserLoginForm #authorization form
+        form = UserLoginForm() #authorization form
         context = {
             'form': form,
             'title': 'Login'

@@ -27,7 +27,7 @@ class EclipseUser(AbstractBaseUser, PermissionsMixin):
         if not self.displayname:
             self.displayname = self.username
         
-        if not self.avatar:
+        if not self.pk and not self.avatar:
             default_avatars = [
                 'avatars/defaults/account.png',
                 'avatars/defaults/account(1).png',

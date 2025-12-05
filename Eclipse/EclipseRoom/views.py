@@ -19,7 +19,7 @@ class Main(View):
 class RoomCreate(LoginRequiredMixin, View):
     
     def get(self, request):
-        form = RoomCreationForm
+        form = RoomCreationForm()
         return render(request, "room/create.html", context={"form":form})
     
     def post(self,request):
@@ -33,6 +33,8 @@ class RoomCreate(LoginRequiredMixin, View):
                 role=RoomUser.ROLE_CREATOR
             )
             return redirect("rooms:room", room_pk=room.id)
+        else:
+            return render(request, "room/create.html", context={"form": form})
         
 class RoomPage(LoginRequiredMixin, View):
     

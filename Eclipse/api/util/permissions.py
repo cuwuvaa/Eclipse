@@ -55,7 +55,7 @@ class RoleChange(BasePermission):
         except RoomUser.DoesNotExist:
             return False
 
-        return user_making_request_profile.role in [RoomUser.ROLE_CREATOR, RoomUser.ROLE_MODERATOR] and  (user_making_request_profile != user_to_be_changed)
+        return user_making_request_profile.role in [RoomUser.ROLE_CREATOR, RoomUser.ROLE_MODERATOR] and  (user_making_request_profile != user_to_be_changed) and user_to_be_changed.role != RoomUser.ROLE_CREATOR
 
 class IsRoomMember(BasePermission):
     def has_permission(self, request, view):

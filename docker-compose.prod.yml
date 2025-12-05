@@ -1,0 +1,48 @@
+services:
+  web:
+    build: ./Eclipse
+    working_dir: /usr/src/Eclipse/
+    command: daphne -b 0.0.0.0 -p 8000 Eclipse.asgi:application
+    volumes:
+      - prod_static_volume:/usr/src/Eclipse/staticfiles
+      - prod_media_volume:/usr/src/Eclipse/media
+    expose:
+      - 8000
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - ./Eclipse/.env.prod
+      - ./.env.db.prod
+
+  db:
+    image: postgres:18.0-alpine
+    volumes:
+      - prod_postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=eclipseprod
+      - POSTGRES_USER=produser
+      - POSTGRES_PASSWORD=prodpass
+    env_file:
+      - ./.env.db.prod
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "1337:80"
+    volumes:
+      - prod_static_volume:/usr/src/Eclipse/staticfiles
+      - prod_media_volume:/usr/src/Eclipse/media
+    depends_on:
+      - web
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - prod_redis_data:/data
+
+volumes:
+  prod_postgres_data:
+  prod_static_volume:
+  prod_media_volume:
+  prod_redis_data:

@@ -1,0 +1,51 @@
+services:
+  web:
+    build: ./Eclipse
+    working_dir: /usr/src/Eclipse/
+    command: daphne -b 0.0.0.0 -p 8000 Eclipse.asgi:application
+    volumes:
+      - ./Eclipse:/usr/src/Eclipse/  # Volume mount for development
+      - dev_static_volume:/usr/src/Eclipse/staticfiles
+      - dev_media_volume:/usr/src/Eclipse/media
+    ports:
+      - "8000:8000"  # Expose port for development
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - ./Eclipse/.env.dev
+      - ./.env.db.dev
+
+  db:
+    image: postgres:18.0-alpine
+    volumes:
+      - dev_postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=eclipsedev
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=devpass
+    env_file:
+      - ./.env.db.dev
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "1337:80"
+    volumes:
+      - dev_static_volume:/usr/src/Eclipse/staticfiles
+      - dev_media_volume:/usr/src/Eclipse/media
+    depends_on:
+      - web
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - dev_redis_data:/data
+
+volumes:
+  dev_postgres_data:
+  dev_static_volume:
+  dev_media_volume:
+  dev_redis_data:

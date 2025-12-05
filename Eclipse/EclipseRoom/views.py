@@ -23,7 +23,7 @@ class RoomCreate(LoginRequiredMixin, View):
         return render(request, "room/create.html", context={"form":form})
     
     def post(self,request):
-        form = RoomCreationForm(request.POST)
+        form = RoomCreationForm(request.POST, request.FILES)
         
         if form.is_valid():
             room = form.save()

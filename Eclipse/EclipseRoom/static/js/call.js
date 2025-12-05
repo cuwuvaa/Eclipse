@@ -210,10 +210,29 @@ function handleUserLeft(userId) {
         peerConnections[userId].close();
         delete peerConnections[userId];
     }
+    const userCard = document.getElementById(`user-${userId}`);
+    if (userCard) {
+        const videoElement = userCard.querySelector('video');
+        if (videoElement) {
+            videoElement.remove();
+        }
+        const audioEl = document.getElementById(`remote-audio-${userId}`);
+        if (audioEl) {
+            audioEl.remove();
+        }
+    }
+}
+
+function handleUserKick(userId) {
+    if (peerConnections[userId]) {
+        peerConnections[userId].close();
+        delete peerConnections[userId];
+    }
     removeElementById(`remote-video-${userId}`);
     removeElementById(`remote-audio-${userId}`);
     removeElementById(`user-${userId}`);
 }
+
 
 async function leaveVoice() {
     sendActionSocket("user_disconnect", {});
@@ -236,8 +255,15 @@ async function cleanup() {
         localStream = null;
     }
     
-    document.getElementById('remote-media-container').innerHTML = '';
-    document.getElementById(`user-${userdata.id}`).remove();
+    const localUserCard = document.getElementById(`user-${userdata.id}`);
+    if (localUserCard) {
+        localUserCard.remove();
+    }
+
+    const voiceParticipants = document.getElementById('voice_participants');
+    voiceParticipants.querySelectorAll('video').forEach(video => video.remove());
+
+    document.querySelectorAll('[id^=remote-audio-]').forEach(audio => audio.remove());
 
     showLocalVideo(false);
     isConnected = false;

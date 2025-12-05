@@ -17,6 +17,13 @@ class RoomCreationForm(forms.ModelForm):
             'placeholder': 'Enter a description for your room'
         })
     )
+    avatar = forms.ImageField(
+        label='avatar',
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-input'
+        })
+    )
     class Meta:
         model = room.Room
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'avatar']

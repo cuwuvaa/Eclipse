@@ -90,32 +90,7 @@ function toggleRemoteVideo(userId, show) {
 
 // --- User and Message Rendering ---
 
-function createActionWindow(element, buttons) {
-    let timeoutId;
 
-    element.addEventListener('mouseenter', () => {
-        timeoutId = setTimeout(() => {
-            const actionWindow = document.createElement('div');
-            actionWindow.className = 'action-window';
-            buttons.forEach(button => {
-                const btn = document.createElement('button');
-                btn.className = 'small-btn';
-                btn.innerText = button.text;
-                btn.onclick = button.onClick;
-                actionWindow.appendChild(btn);
-            });
-            element.appendChild(actionWindow);
-        }, 500);
-    });
-
-    element.addEventListener('mouseleave', () => {
-        clearTimeout(timeoutId);
-        const actionWindow = element.querySelector('.action-window');
-        if (actionWindow) {
-            actionWindow.remove();
-        }
-    });
-}
 
 async function renderUser(e) {
     if (userContainer && !document.getElementById(`user-${e.id}`)) {
@@ -133,10 +108,19 @@ async function renderUser(e) {
         userDiv.appendChild(userElement);
 
         if ((userdata.role === "moderator" || userdata.role === "creator") && userdata.id !== e.id) {
+            const actionWindow = document.createElement('div');
+            actionWindow.className = 'action-window';
             const buttons = [
                 { text: 'Kick from voice', onClick: () => sendActionSocket("voice_kick", { "id": e.id }) }
             ];
-            createActionWindow(userDiv, buttons);
+            buttons.forEach(button => {
+                const btn = document.createElement('button');
+                btn.className = 'small-btn';
+                btn.innerText = button.text;
+                btn.onclick = button.onClick;
+                actionWindow.appendChild(btn);
+            });
+            userDiv.appendChild(actionWindow);
         }
         userContainer.appendChild(userDiv);
     }
@@ -149,32 +133,46 @@ async function renderMembers() {
 
         membersContainer.innerHTML = ''; // Clear existing members
         for (const element of roomUsers) {
-            let role, action;
-            if (element.role === "moderator") {
-                role = "user";
-                action = "demote";
-            } else {
-                action = "promote";
-                role = "moderator";
-            }
-            let is_online = element.is_online ? "online" : "offline";
             const memberdiv = document.createElement("div");
             memberdiv.id = `profile-${element.id}`;
             memberdiv.className = "member-card";
+
+            const avatar = document.createElement('img');
+            avatar.src = element.avatar;
+            avatar.className = 'member-avatar';
+            memberdiv.appendChild(avatar);
+
+            const memberInfo = document.createElement('div');
+            memberInfo.className = 'member-info';
             
-            let membernameHTML = `<h1>ID: ${element.id} | ${element.displayname}`;
+            let membernameHTML = `<h1>${element.displayname}`;
             if (element.user === userdata.user) {
                 membernameHTML += ` (You)`;
             }
-            membernameHTML += `</h1><h2>role: ${element.role}</h2>`;
-            memberdiv.innerHTML = membernameHTML;
+            membernameHTML += `</h1>`;
+            memberInfo.innerHTML = membernameHTML;
+            
+            let is_online = element.is_online ? "online" : "offline";
+            const statusElement = document.createElement('h5');
+            statusElement.id = `status-${element.id}`;
+            statusElement.className = is_online;
+            statusElement.innerText = is_online;
+            memberInfo.appendChild(statusElement)
+
+            memberdiv.appendChild(memberInfo)
 
             if (element.user !== userdata.user) {
-                 const buttons = [];
-                 switch (userdata.role) {
+                const actionWindow = document.createElement('div');
+                actionWindow.className = 'action-window';
+                actionWindow.style.display = 'none';
+
+                const buttons = [];
+                switch (userdata.role) {
                     case "creator":
                         buttons.push({ text: 'Kick from room', onClick: () => kickUser(element.id) });
                         if (element.role !== 'creator') {
+                           let role = element.role === "moderator" ? "user" : "moderator"
+                           let action = element.role === "moderator" ? "demote" : "promote"
                            buttons.push({ text: `${action} to ${role}`, onClick: () => changeRole(element.id, role) });
                         }
                         break;
@@ -184,9 +182,27 @@ async function renderMembers() {
                         }
                         break;
                 }
-                createActionWindow(memberdiv, buttons);
+
+                if (buttons.length > 0) {
+                    buttons.forEach(button => {
+                        const btn = document.createElement('button');
+                        btn.className = 'small-btn';
+                        btn.innerText = button.text;
+                        btn.onclick = button.onClick;
+                        actionWindow.appendChild(btn);
+                    });
+                    
+                    const manageBtn = document.createElement('button');
+                    manageBtn.className = 'manage-btn';
+                    manageBtn.innerText = 'Manage';
+                    manageBtn.onclick = () => {
+                        actionWindow.style.display = actionWindow.style.display === 'none' ? 'flex' : 'none';
+                    };
+
+                    memberdiv.appendChild(manageBtn);
+                    memberdiv.appendChild(actionWindow);
+                }
             }
-            memberdiv.innerHTML += `<h5 id="status-${element.id}" class="${is_online}">${is_online}</h5>`
             membersContainer.appendChild(memberdiv);
         }
     } catch (error) {
@@ -195,55 +211,85 @@ async function renderMembers() {
 }
 
 async function updateUser(element, status) {
-    try
-    {
-        document.getElementById(`profile-${element.id}`)
-        let is_online = status ? "online" : "offline"
+    const existingUser = document.getElementById(`profile-${element.id}`);
+    if (existingUser) {
+        let is_online = status ? "online" : "offline";
         const statusElement = document.getElementById(`status-${element.id}`);
         statusElement.innerText = is_online;
         statusElement.className = is_online;
+    } else {
+        const memberdiv = document.createElement("div");
+        memberdiv.id = `profile-${element.id}`;
+        memberdiv.className = "member-card";
+
+        const avatar = document.createElement('img');
+        avatar.src = element.avatar;
+        avatar.className = 'member-avatar';
+        memberdiv.appendChild(avatar);
+
+        const memberInfo = document.createElement('div');
+        memberInfo.className = 'member-info';
+
+        let membernameHTML = `<h1>${element.displayname}`;
+        if (element.user === userdata.user) {
+            membernameHTML += ` (You)`;
+        }
+        membernameHTML += `</h1>`;
+        memberInfo.innerHTML = membernameHTML;
+        
+        let is_online = element.is_online ? "online" : "offline";
+        const statusElement = document.createElement('h5');
+        statusElement.id = `status-${element.id}`;
+        statusElement.className = is_online;
+        statusElement.innerText = is_online;
+        memberInfo.appendChild(statusElement);
+
+        memberdiv.appendChild(memberInfo);
+
+        if (element.user !== userdata.user) {
+            const actionWindow = document.createElement('div');
+            actionWindow.className = 'action-window';
+            actionWindow.style.display = 'none';
+
+            const buttons = [];
+            switch (userdata.role) {
+                case "creator":
+                    buttons.push({ text: 'Kick from room', onClick: () => kickUser(element.id) });
+                    if (element.role !== 'creator') {
+                        let role = element.role === "moderator" ? "user" : "moderator";
+                        let action = element.role === "moderator" ? "demote" : "promote";
+                        buttons.push({ text: `${action} to ${role}`, onClick: () => changeRole(element.id, role) });
+                    }
+                    break;
+                case "moderator":
+                    if (element.role !== "creator" && element.role !== "moderator") {
+                        buttons.push({ text: 'Kick from room', onClick: () => kickUser(element.id) });
+                    }
+                    break;
+            }
+
+            if (buttons.length > 0) {
+                buttons.forEach(button => {
+                    const btn = document.createElement('button');
+                    btn.className = 'small-btn';
+                    btn.innerText = button.text;
+                    btn.onclick = button.onClick;
+                    actionWindow.appendChild(btn);
+                });
+
+                const manageBtn = document.createElement('button');
+                manageBtn.className = 'manage-btn';
+                manageBtn.innerText = 'Manage';
+                manageBtn.onclick = () => {
+                    actionWindow.style.display = actionWindow.style.display === 'none' ? 'flex' : 'none';
+                };
+
+                memberdiv.appendChild(manageBtn);
+                memberdiv.appendChild(actionWindow);
+            }
+        }
+        membersContainer.appendChild(memberdiv);
     }
-    catch(error)
-    {
-            let role, action;
-            if (element.role === "moderator") {
-                role = "user";
-                action = "demote";
-            } else {
-                action = "promote";
-                role = "moderator";
-            }
-            let is_online = element.is_online ? "online" : "offline"
-            const memberdiv = document.createElement("div");
-            memberdiv.id = `profile-${element.id}`;
-            memberdiv.className = "member-card";
-
-            let membernameHTML = `<h1>ID: ${element.id} | ${element.displayname}`;
-            if (element.user === userdata.user) {
-                membernameHTML += ` (You)`;
-            }
-            membernameHTML += `</h1><h2>role: ${element.role}</h2>`;
-            memberdiv.innerHTML = membernameHTML;
-
-            if (element.user !== userdata.user) {
-                 switch (userdata.role) {
-                    case "creator":
-                        memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
-                        if (element.role !== 'creator') {
-                           memberdiv.innerHTML += `<button onclick="changeRole(${element.id},'${role}')">${action} to ${role}</button>`;
-                        }
-                        break;
-                    case "moderator":
-                        if (element.role !== "creator" && element.role !== "moderator") {
-                            memberdiv.innerHTML += `<button onclick="kickUser(${element.id})">kick</button>`;
-                        }
-                        break;
-                }
-            }
-            memberdiv.innerHTML += `<h5 id="status-${element.id}" class="${is_online}">${is_online}</h5>`
-            membersContainer.appendChild(memberdiv);
-    }
-
 }
 
 
@@ -295,19 +341,26 @@ function createMessageHTML(e) {
     messageDiv.id = `message-${e.id}`;
     messageDiv.className = 'message-item';
 
-    messageDiv.innerHTML = `<h3>${e.displayname} | ${e.role}</h3>
-                            <h4>${new Date(e.timestamp).toLocaleString()}</h4>
-                            <h2>${e.text}</h2>`;
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.innerHTML = `<h3>${e.displayname} | ${e.role}</h3>
+                                <h4>${new Date(e.timestamp).toLocaleString()}</h4>
+                                <h2>${e.text}</h2>`;
+    messageDiv.appendChild(messageContent);
 
     const canDelete = (userdata.role === "creator" && e.role !== "creator") ||
                       (userdata.role === "moderator" && e.role === "user") ||
                       (e.roomsender_id === userdata.id);
 
     if (canDelete) {
-        const buttons = [
-            { text: 'Delete', onClick: () => deleteMessage(e.id) }
-        ];
-        createActionWindow(messageDiv, buttons);
+        const actionWindow = document.createElement('div');
+        actionWindow.className = 'action-window';
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.onclick = () => deleteMessage(e.id);
+        actionWindow.appendChild(deleteBtn);
+        messageDiv.appendChild(actionWindow);
     }
     return messageDiv;
 }
@@ -338,3 +391,120 @@ async function fetchdata(url) {
         return null;
     }
 }
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// --- Room Settings Modal ---
+function initializeUI() {
+    const roomSettingsModal = document.getElementById('room-settings-modal');
+    const roomSettingsBtn = document.getElementById('room-settings-btn');
+    const roomSettingsCloseBtn = roomSettingsModal.querySelector('.close-btn');
+    const roomSettingsForm = document.getElementById('room-settings-form');
+
+    const deleteRoomModal = document.getElementById('delete-room-modal');
+    const deleteRoomBtn = document.getElementById('delete-room-btn');
+    const deleteRoomCloseBtn = deleteRoomModal.querySelector('.close-btn');
+    const deleteRoomForm = document.getElementById('delete-room-form');
+
+    if (roomSettingsBtn && (userdata.role === 'creator' || userdata.role === 'moderator')) {
+        roomSettingsBtn.style.display = 'block';
+        roomSettingsBtn.onclick = function() {
+            roomSettingsModal.style.display = 'block';
+        }
+    }
+
+    if (userdata.role === 'creator') {
+        deleteRoomBtn.style.display = 'block';
+        deleteRoomBtn.onclick = function() {
+            roomSettingsModal.style.display = 'none';
+            deleteRoomModal.style.display = 'block';
+        }
+    }
+
+    if (roomSettingsCloseBtn) {
+        roomSettingsCloseBtn.onclick = function() {
+            roomSettingsModal.style.display = 'none';
+        }
+    }
+    
+    if (deleteRoomCloseBtn) {
+        deleteRoomCloseBtn.onclick = function() {
+            deleteRoomModal.style.display = 'none';
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target == roomSettingsModal) {
+            roomSettingsModal.style.display = 'none';
+        }
+        if (event.target == deleteRoomModal) {
+            deleteRoomModal.style.display = 'none';
+        }
+    }
+
+    if (roomSettingsForm) {
+        roomSettingsForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const description = document.getElementById('room-description').value;
+            const avatar = document.getElementById('room-avatar').files[0];
+
+            if (description) {
+                formData.append('description', description);
+            }
+            if (avatar) {
+                formData.append('avatar', avatar);
+            }
+
+            const response = await fetch(`/api/rooms/${roomId}/update/`, {
+                method: 'PATCH',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: formData,
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Failed to update room settings');
+            }
+        });
+    }
+
+    if (deleteRoomForm) {
+        deleteRoomForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const passphrase = document.getElementById('passphrase-input').value;
+            const response = await fetch(`/api/rooms/${roomId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ passphrase }),
+            });
+
+            if (response.ok) {
+                window.location.href = '/';
+            } else {
+                console.error('Failed to delete room');
+            }
+        });
+    }
+}
+
+

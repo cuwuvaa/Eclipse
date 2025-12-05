@@ -15,8 +15,11 @@ class MyProfile(View):
 
     def post(self, request):
         displayname = request.POST.get('displayname')
+        avatar = request.FILES.get('avatar')
+        user = request.user
         if displayname:
-            user = request.user
             user.displayname = displayname
-            user.save()
+        if avatar:
+            user.avatar = avatar
+        user.save()
         return redirect("users:profile")

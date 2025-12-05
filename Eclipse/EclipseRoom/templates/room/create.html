@@ -11,7 +11,7 @@
 <div class="create-room-container">
   <div class="create-room-form">
     <h1 class="form-title">Create a New Room</h1>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="form-group">
         <label for="id_name" class="form-label">Room Name</label>
@@ -20,6 +20,10 @@
       <div class="form-group">
         <label for="id_description" class="form-label">Description</label>
         {{ form.description }}
+      </div>
+      <div class="form-group">
+        <label for="id_avatar" class="form-label">Avatar</label>
+        {{ form.avatar }}
       </div>
       <button type="submit" class="submit-btn">Create Room</button>
     </form>

@@ -45,12 +45,15 @@
     <div class="rooms-grid">
       {% for room in rooms %}
         <a href="{% url 'rooms:room' room.id %}" class="room-card">
-          <div class="room-card-header">
-            <h2 class="room-name">{{ room.name }}</h2>
-            <span class="room-id">#{{room.id}}</span>
-          </div>
-          <div class="room-details">
-            <p>{{ room.description }}</p>
+          <img src="{{ room.avatar.url }}" alt="{{ room.name }} avatar" class="room-avatar">
+          <div class="room-card-content">
+            <div class="room-card-header">
+              <h2 class="room-name">{{ room.name }}</h2>
+              <span class="room-id">#{{room.id}}</span>
+            </div>
+            <div class="room-details">
+              <p>{{ room.description }}</p>
+            </div>
           </div>
         </a>
       {% endfor %}

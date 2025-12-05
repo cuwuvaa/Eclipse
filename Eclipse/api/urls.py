@@ -1,5 +1,5 @@
 from django.urls import path
-from api.views.room import RoomUsersAPI, RoomsAPI, RoomMessageAPI, RoomUserAPI
+from api.views.room import RoomUsersAPI, RoomsAPI, RoomMessageAPI, RoomUserAPI, RoomUpdateView, RoomDeleteView
 from api.views.user import UserListAPI, UserDataAPI
 from api.views.room import RoomMessageDeleteView, RoomUserDeleteView, RoomUserRoleUpdateView, RoomBulkUsersAPI
 
@@ -7,6 +7,8 @@ app_name = "api"
 
 urlpatterns = [
     path("rooms/", RoomsAPI.as_view(), name="rooms"),
+    path("rooms/<int:room_pk>/update/", RoomUpdateView.as_view(), name="roomupdate"),
+    path("rooms/<int:room_pk>/delete/", RoomDeleteView.as_view(), name="roomdelete"),
     path("rooms/<int:room_pk>/users/", RoomUsersAPI.as_view(), name="roomusers"),
     path('rooms/<int:room_pk>/users/<int:roomuser_pk>/', RoomUserAPI.as_view(), name='roomuser'),
     path('rooms/<int:room_pk>/users/<int:roomuser_pk>/delete/', RoomUserDeleteView.as_view(), name='roomuserdelete'),

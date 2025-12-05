@@ -1,25 +1,38 @@
 from rest_framework.permissions import BasePermission
 from EclipseRoom.models.roomuser import RoomUser
+from EclipseRoom.models.room import Room
+from EclipseRoom.models.roommessage import RoomMessage
 
 class IsRoomAdminOrCreator(BasePermission):
     def has_object_permission(self, request, view, obj):
-        # obj — это Message
-        message = obj
-        room = message.room
         user = request.user
 
-        if message.room_user.role == RoomUser.ROLE_CREATOR:
-            return message.room_user.user == user
+        if isinstance(obj, RoomMessage):
+            room = obj.room
+            if obj.room_user.user == user:
+                return True
+        elif isinstance(obj, Room):
+            room = obj
+        else:
+            return False
 
         try:
             room_user = RoomUser.objects.get(room=room, user=user)
         except RoomUser.DoesNotExist:
             return False
 
-        return (
-            room_user.role in [RoomUser.ROLE_CREATOR, RoomUser.ROLE_MODERATOR] or
-            message.room_user.user == user
-        )
+        return room_user.role in [RoomUser.ROLE_CREATOR, RoomUser.ROLE_MODERATOR]
+
+class IsRoomCreator(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        try:
+            room_user = RoomUser.objects.get(room=obj, user=user)
+        except RoomUser.DoesNotExist:
+            return False
+        return room_user.role == RoomUser.ROLE_CREATOR
+
+
 
 class IsModerator(BasePermission):
     def has_object_permission(self, request, view, obj):

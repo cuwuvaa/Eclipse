@@ -103,6 +103,14 @@
   gap: 24px;
 }
 
+.room-avatar {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+}
+
 .room-card {
   background-color: var(--card-bg);
   border: 1px solid var(--border);
@@ -113,7 +121,14 @@
   transition: all 0.3s;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 16px;
+}
+
+.room-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .room-card:hover {

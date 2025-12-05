@@ -1,16 +1,40 @@
 from rest_framework import generics, status, views
 from rest_framework.views import APIView
-from EclipseRoom.serializers.roomuser import RoomUserProfileSerializer, RoomSerializer
+from EclipseRoom.serializers.roomuser import RoomUserProfileSerializer, RoomSerializer, RoomUpdateSerializer
 from EclipseRoom.serializers.roommessage import RoomMessageSerializer
 from EclipseRoom.models.roomuser import RoomUser
 from EclipseRoom.models.room import Room
 from EclipseRoom.models.roommessage import RoomMessage
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 
-from api.util.permissions import IsRoomMember, IsRoomAdminOrCreator, RoleChange, IsModerator
+from api.util.permissions import IsRoomMember, IsRoomAdminOrCreator, RoleChange, IsModerator, IsRoomCreator
+
+class RoomDeleteView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated, IsRoomCreator]
+    queryset = Room.objects.all()
+    lookup_url_kwarg = 'room_pk'
+
+    def destroy(self, request, *args, **kwargs):
+        room = self.get_object()
+        passphrase = request.data.get('passphrase')
+        if passphrase != f"delete {room.name}":
+            return Response(
+                {'error': 'Incorrect passphrase.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.perform_destroy(room)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 from rest_framework.permissions import IsAuthenticated
 from api.util.pagination import MessagePagination
+
+class RoomUpdateView(generics.UpdateAPIView):
+    serializer_class = RoomUpdateSerializer
+    permission_classes = [IsAuthenticated, IsRoomAdminOrCreator]
+    queryset = Room.objects.all()
+    lookup_url_kwarg = 'room_pk'
 
 class RoomUsersAPI(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsRoomMember]

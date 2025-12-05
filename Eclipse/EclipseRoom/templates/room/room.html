@@ -10,6 +10,13 @@
 <div id="blur-wrapper">
 <div class="room-container">
   <div class="main-room-content">
+    <div class="room-header">
+        <img src="{{ room.avatar.url }}" alt="{{ room.name }} avatar" class="room-page-avatar">
+        <div class="room-header-info">
+            <h1 class="room-page-title">{{ room.name }}</h1>
+            <p class="room-page-description">{{ room.description }}</p>
+        </div>
+    </div>
     <div class="chat-section">
       <h2 class="section-title">Chat</h2>
       <div id="messages">
@@ -21,8 +28,38 @@
       </div>
     </div>
     <div class="room-members-section">
-      <h2 class="section-title">Room Members</h2>
+      <div class="section-header">
+        <h2 class="section-title">Room Members</h2>
+        <button id="room-settings-btn" class="btn btn-secondary" style="display: none;"><i class="fas fa-cog"></i></button>
+      </div>
       <div id="room_members"></div>
+    </div>
+  </div>
+
+  <div id="room-settings-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Room Settings</h2>
+        <form id="room-settings-form">
+            <label for="room-description">Description</label>
+            <textarea id="room-description" name="description"></textarea>
+            <label for="room-avatar">Avatar</label>
+            <input type="file" id="room-avatar" name="avatar" accept="image/*">
+            <button type="submit" class="submit-btn">Save</button>
+        </form>
+        <button id="delete-room-btn" class="btn btn-danger" style="display: none;">Delete Room</button>
+    </div>
+  </div>
+
+  <div id="delete-room-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Delete Room</h2>
+        <p>To delete this room, please enter the following passphrase: <strong>delete {{ room.name }}</strong></p>
+        <form id="delete-room-form">
+            <input type="text" id="passphrase-input" placeholder="Enter passphrase...">
+            <button type="submit" id="confirm-delete-btn" class="submit-btn btn-danger">Delete</button>
+        </form>
     </div>
   </div>
 

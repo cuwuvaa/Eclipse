@@ -2,6 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from api.serializers import UserAPISerializer
+import redis
 from collections import defaultdict
 import json
 from EclipseRoom.models.roommessage import RoomMessage
@@ -13,101 +14,117 @@ from EclipseRoom.models.roomuser import RoomUser
 import asyncio
 import logging
 
-# YES, I HAD TO REALLY CODE THIS LOGGER
-# Logger setup (optional, but more convenient than print)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter('[%(asctime)s] %(message)s'))
-    logger.addHandler(handler)
+r = redis.Redis(host='redis', port=6379, db=0)
 
-# Global variable (you already have this)
-room_connections = defaultdict(dict)
-streaming = defaultdict()
+def set_user_online(user_id):
+    r.set(f"online:{user_id}", "", ex=60)
 
-# Flag to avoid starting the task multiple times
-_print_task_started = False
+def set_user_offline(user_id):
 
-async def _print_room_connections_periodically():
-    """Background task: prints room_connections every second."""
-    while True:
-        # Nice output: only non-empty rooms
-        snapshot = {
-            room_id: list(users.keys())  # only user IDs
-            for room_id, users in room_connections.items()
-            if users
-        }
-        if snapshot:
-            logger.info(f"room_connections: {snapshot}")
-        else:
-            logger.info("room_connections: {} (empty)")
-        await asyncio.sleep(1)
+    r.delete(f"online:{user_id}")
 
-def start_monitoring():
-    """Starts the background task if it's not already running."""
-    global _print_task_started
-    if not _print_task_started:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            loop.create_task(_print_room_connections_periodically())
-            _print_task_started = True
-            logger.info("✅ Monitoring room_connections started (every 1s).")
-        else:
-            # If the loop is not yet running (rare in Channels), defer the start
-            asyncio.ensure_future(_print_room_connections_periodically())
-            _print_task_started = True
-
-
-# add notifications. dynamic: user kick, user ban
-room_connections = defaultdict(dict)
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
+
     async def connect(self):
+
         self.room_id = self.scope['url_route']['kwargs']['room_id']
+
         self.room_group_name = f'room_{self.room_id}'
+
         self.user = UserAPISerializer(self.scope['user']).data
+
         auth = self.scope['user'].is_authenticated
+
+
 
         self.is_streaming = False
 
+
+
         self.profile = await self.user_profile()
+
         if (not auth) or not(self.profile):
+
             print("POSHEL NAHUI")
+
             await self.close()
+
             return
+
+        
+
+        await sync_to_async(set_user_online)(self.user["id"])
+
+
 
         self.profile = await sync_to_async(lambda: RoomUserProfileSerializer(self.profile).data)()
+
         
+
         await self.channel_layer.group_add(
+
             self.room_group_name,
+
             self.channel_name
+
         )
+
         await self.accept()
+
         await self.send(text_data=json.dumps({
+
                 "action":"handshake",
+
                 "profile": self.profile,
+
                 "connected":list(room_connections[self.room_id].keys())
+
             }))
 
+
+
     async def disconnect(self, close_code):
+
         if self.profile == False:
+
             return
+
+        
+
+        await sync_to_async(set_user_offline)(self.user["id"])
+
+
+
         if self.profile["id"] in room_connections.get(self.room_id, {}):
+
             del room_connections[self.room_id][self.profile["id"]]
 
 
+
+
+
             await self.channel_layer.group_send(
+
                 self.room_group_name,
+
                 {
+
                     'type': 'user_disconnect',
+
                     'user': self.profile,
+
                 }
+
             )
+
         await self.channel_layer.group_discard(
+
             self.room_group_name,
+
             self.channel_name
+
         )
 
     async def receive(self, text_data):

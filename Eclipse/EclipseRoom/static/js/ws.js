@@ -18,6 +18,7 @@ ws.onmessage = async function(event) {
     // The first message should always be the handshake
     if (data.action === "handshake") {
         userdata = data.profile;
+        initializeUI();
         handshakeResolver(data); // Resolve the promise so init() can continue
     }
 
@@ -64,6 +65,9 @@ ws.onmessage = async function(event) {
             break;
 
         case 'user_disconnect':
+            if (data.user.id === userdata.id) {
+                return;
+            }
             if (isConnected) {
                 handleUserLeft(data.user.id);
             } else {
@@ -88,7 +92,7 @@ ws.onmessage = async function(event) {
             if (data.id === userdata.id) {
                 leaveVoice();
             } else {
-                handleUserLeft(data.id);
+                handleUserKick(data.id);
             }
             break;
 

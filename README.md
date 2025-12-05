@@ -129,6 +129,51 @@
 
 ---
 
+#### Docker Конфигурация
+
+Проект включает конфигурации Docker для сред разработки и продакшена:
+
+**Среда разработки**:
+- Использует горячую перезагрузку для разработки
+- Открывает базу данных на порту 5432 для локального доступа
+- Работает с сервером разработки Django
+- Создает пользователя администратора по умолчанию, если он не существует
+
+**Среда продакшена**:
+- Использует Gunicorn как WSGI-сервер
+- Автоматически собирает статические файлы
+- Использует производственные настройки
+- Настроена для развертывания
+
+**Команды Docker**:
+```bash
+# Используя Makefile (если доступен):
+make dev          # Запустить среду разработки
+make prod         # Запустить производственную среду
+make dev-down     # Остановить среду разработки
+make prod-down    # Остановить производственную среду
+
+# Используя скрипт управления:
+./docker-manage.sh dev        # Запустить среду разработки
+./docker-manage.sh prod       # Запустить производственную среду
+./docker-manage.sh dev-down   # Остановить среду разработки
+./docker-manage.sh prod-down  # Остановить производственную среду
+./docker-manage.sh logs       # Просмотр логов среды разработки
+./docker-manage.sh clean      # Удалить все Docker контейнеры и volumes
+
+# Или используя docker-compose напрямую:
+docker-compose -f docker-compose.dev.yml up --build    # Разработка
+docker-compose -f docker-compose.prod.yml up --build   # Продакшен
+```
+
+При запуске контейнера приложение автоматически:
+1. Применяет миграции базы данных
+2. Собирает статические файлы (только для продакшена)
+3. Создает необходимых суперпользователей (только для разработки)
+4. Запускает соответствующий сервер (Daphne для разработки, Gunicorn для продакшена)
+
+---
+
 #### Тестирование
 
 Проект включает комплексный набор тестов для обеспечения качества кода и правильной работы всех компонентов:
@@ -256,6 +301,51 @@ The project is divided into the following main Django applications:
 - **Main Eclipse app**: Django settings, URL routing, templates
 
 The frontend is implemented with JavaScript and WebSocket for real-time communication, along with WebRTC for voice/video chat.
+
+---
+
+#### Docker Configuration
+
+The project includes Docker configurations for both development and production environments:
+
+**Development Environment**:
+- Uses hot-reloading for development
+- Exposes database on port 5432 for local access
+- Runs with Django's development server
+- Creates a default admin user if one doesn't exist
+
+**Production Environment**:
+- Uses Gunicorn as the WSGI server
+- Collects static files automatically
+- Uses production settings
+- Configured for deployment
+
+**Docker Commands**:
+```bash
+# Using Makefile (if available):
+make dev          # Start development environment
+make prod         # Start production environment
+make dev-down     # Stop development environment
+make prod-down    # Stop production environment
+
+# Using the management script:
+./docker-manage.sh dev        # Start development environment
+./docker-manage.sh prod       # Start production environment
+./docker-manage.sh dev-down   # Stop development environment
+./docker-manage.sh prod-down  # Stop production environment
+./docker-manage.sh logs       # View logs from development environment
+./docker-manage.sh clean      # Remove all Docker containers and volumes
+
+# Or using docker-compose directly:
+docker-compose -f docker-compose.dev.yml up --build    # Development
+docker-compose -f docker-compose.prod.yml up --build   # Production
+```
+
+On container startup, the application will automatically:
+1. Apply database migrations
+2. Collect static files (production only)
+3. Create necessary superusers (development only)
+4. Start the appropriate server (Daphne for dev, Gunicorn for prod)
 
 ---
 

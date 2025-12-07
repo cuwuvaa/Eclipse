@@ -30,6 +30,7 @@ services:
     build: ./nginx
     ports:
       - "1337:80"
+      - "1338:443"
     volumes:
       - prod_static_volume:/usr/src/Eclipse/staticfiles
       - prod_media_volume:/usr/src/Eclipse/media

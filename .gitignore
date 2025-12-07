@@ -6,3 +6,4 @@ venv/
 readme2.md
 **/migrations/
 **/.*
+**/ssl/

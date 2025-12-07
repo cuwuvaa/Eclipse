@@ -28,11 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-dev')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = ["*"]
-
-CSRF_TRUSTED_ORIGINS = ['http://localhost:1337']
 # Application definition
 
 INSTALLED_APPS = [
@@ -45,12 +43,24 @@ INSTALLED_APPS = [
     'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'channels',
 
     'EclipseUser',
     'EclipseRoom',
     'api',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Eclipse API',
+    'DESCRIPTION': 'API for the Eclipse project',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -171,3 +181,42 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session will close when the browser is
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Default avatars settings
+DEFAULT_USER_AVATAR = 'avatars/defaults/account.png'
+DEFAULT_ROOM_AVATAR = 'rooms/defaults/room.png'
+
+# Security settings for HTTPS
+if not DEBUG:
+    # These settings should only be active in production
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Set trusted origins for production
+    CSRF_TRUSTED_ORIGINS = [
+        'https://localhost:1338',
+        'https://macbook.local:1338',  # Added for accessing from MacBook
+    ]
+else:
+    # For development, we set CSRF_TRUSTED_ORIGINS to include https
+    CSRF_TRUSTED_ORIGINS = [
+        'http://localhost:1337',
+        'https://localhost:1337',
+        'http://localhost:1338',
+        'https://localhost:1338',
+        'https://macbook.local:1338',  # Added for accessing from MacBook
+    ]
+
+# Add this to handle proxy headers
+USE_X_FORWARDED_HOST = True
+
+# Default superuser credentials (for use in management command)
+DEFAULT_SUPERUSER_USERNAME = os.getenv('DEFAULT_SUPERUSER_USERNAME', 'admin')
+DEFAULT_SUPERUSER_EMAIL = os.getenv('DEFAULT_SUPERUSER_EMAIL', 'admin@example.com')
+DEFAULT_SUPERUSER_PASSWORD = os.getenv('DEFAULT_SUPERUSER_PASSWORD', 'admin123')

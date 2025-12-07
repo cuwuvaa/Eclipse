@@ -2,10 +2,17 @@ from django.urls import path
 from api.views.room import RoomUsersAPI, RoomsAPI, RoomMessageAPI, RoomUserAPI, RoomUpdateView, RoomDeleteView
 from api.views.user import UserListAPI, UserDataAPI
 from api.views.room import RoomMessageDeleteView, RoomUserDeleteView, RoomUserRoleUpdateView, RoomBulkUsersAPI
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 app_name = "api"
 
 urlpatterns = [
+    # API Documentation
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('docs/', SpectacularSwaggerView.as_view(url_name='api:schema'), name='swagger-ui'),
+    path('redoc/', SpectacularRedocView.as_view(url_name='api:schema'), name='redoc'),
+
+    # Application API
     path("rooms/", RoomsAPI.as_view(), name="rooms"),
     path("rooms/<int:room_pk>/update/", RoomUpdateView.as_view(), name="roomupdate"),
     path("rooms/<int:room_pk>/delete/", RoomDeleteView.as_view(), name="roomdelete"),

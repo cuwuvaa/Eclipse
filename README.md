@@ -92,6 +92,7 @@
     ```
 
 2.  **Запустите интерактивный установщик:**
+    ## ПОМЕНЯЙТЕ ENV.PROD ПОСЛЕ УСТАНОВКИ
     Этот скрипт поможет вам настроить окружение, включая учетные данные базы данных, суперпользователя Django и SSL-сертификаты.
     ```sh
     ./install.sh
@@ -220,7 +221,9 @@ Here is a demonstration of the real-time chat and video connection in action:
     ```
 
 2.  **Run the interactive installer:**
-    This script will guide you through setting up your environment, including database credentials, Django superuser, and SSL certificates.
+    This script will guide you through setting up your environment, including database credentials, Django superuser, and SSL 
+    certificates.
+    ## CHANGE ENV.PROD AFTER INSTALLING
     ```sh
     ./install.sh
     ```

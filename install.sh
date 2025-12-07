@@ -16,6 +16,11 @@ echo "========================================"
 echo "This script will guide you through the setup process."
 echo
 
+echo "========================================================================="
+echo " WARNING!!! CHANGE .ENV.PROD CONFIGURATION IN CASE OF RUNNING PRODUCTION"
+echo "========================================================================="
+echo "This script will guide you through the setup process."
+echo
 # --- Database Credentials ---
 echo "--- Database Setup ---"
 db_user=$(prompt_for_input "Enter database username" "devuser")
@@ -51,8 +56,8 @@ echo "Creating .env.db.prod..."
 cat > .env.db.prod <<EOL
 # PostgreSQL settings for production
 POSTGRES_DB=eclipseprod
-POSTGRES_USER=produser
-POSTGRES_PASSWORD=change_me_to_a_strong_password
+POSTGRES_USER=${db_user}
+POSTGRES_PASSWORD=${db_password}
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 EOL
@@ -74,7 +79,7 @@ EOL
 echo "Creating Eclipse/.env.prod..."
 cat > Eclipse/.env.prod <<EOL
 # Django settings for production
-SECRET_KEY=change_me_to_a_long_random_string_for_production
+SECRET_KEY=${secret_key}
 DEBUG=False
 
 # Default superuser credentials (not recommended for production)

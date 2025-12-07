@@ -36,3 +36,4 @@ txaio==25.9.2
 typing_extensions==4.15.0
 uvicorn==0.38.0
 zope.interface==8.1
+gunicorn==22.0.0

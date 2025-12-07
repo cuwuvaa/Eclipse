@@ -16,14 +16,11 @@ services:
       - ./Eclipse/.env.dev
       - ./.env.db.dev
 
+
   db:
     image: postgres:18.0-alpine
     volumes:
       - dev_postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=eclipsedev
-      - POSTGRES_USER=devuser
-      - POSTGRES_PASSWORD=devpass
     env_file:
       - ./.env.db.dev
 

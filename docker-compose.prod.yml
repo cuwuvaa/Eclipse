@@ -14,15 +14,10 @@ services:
     env_file:
       - ./Eclipse/.env.prod
       - ./.env.db.prod
-
   db:
     image: postgres:18.0-alpine
     volumes:
       - prod_postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=eclipseprod
-      - POSTGRES_USER=produser
-      - POSTGRES_PASSWORD=prodpass
     env_file:
       - ./.env.db.prod
 

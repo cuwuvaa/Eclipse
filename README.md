@@ -18,7 +18,7 @@
       - [Демонстрация](#демонстрация)
       - [Основные функции](#основные-функции)
       - [Технологический стек](#технологический-стек)
-      - [Начало работы](#начало-работы)
+      - [Установка](#начало-работы)
       - [Архитектура проекта](#архитектура-проекта)
       - [Тестирование](#тестирование)
       - [Лицензия](#лицензия)
@@ -27,7 +27,7 @@
       - [Demo](#demo)
       - [Key Features](#key-features)
       - [Tech Stack & Tools](#tech-stack--tools)
-      - [Getting Started](#getting-started)
+      - [Installing](#getting-started)
       - [Project Architecture](#project-architecture)
       - [Testing](#testing)
       - [License](#license)
@@ -74,47 +74,34 @@
 - **Кэш и брокер сообщений**: Redis
 - **Фронтенд**: HTML5, CSS3, JavaScript, WebRTC, WebSocket
 - **Инфраструктура**: Docker, Docker Compose, Nginx
-
 ---
 
 #### Начало работы
 
-Чтобы запустить проект на вашей локальной машине, вам понадобится только Python и Redis.
-
 **Предварительные требования**:
-- Python 3.11+
-- Redis
-- Docker и Docker Compose (рекомендуется)
+- Docker и Docker Compose
+- OpenSSL
+- Git
 
 **Инструкции**:
-1. Клонируйте репозиторий и перейдите в него:
-   ```sh
-   git clone https://github.com/cuwuvaa/Eclipse.git
-   cd Eclipse
-   ```
-2. Запустите проект с помощью Docker Compose:
-   ```sh
-   docker-compose up --build
-   ```
-   Или, если вы хотите запустить приложение локально:
-3. Создайте и активируйте виртуальное окружение:
-   ```sh
-   python -m venv venv
-   source venv/bin/activate  # На Windows: venv\Scripts\activate
-   ```
-4. Установите необходимые зависимости:
-   ```sh
-   pip install -r requirements.txt
-   ```
-5. Примените миграции базы данных:
-   ```sh
-   python manage.py migrate
-   ```
-6. Запустите сервер разработки:
-   ```sh
-   python manage.py runserver
-   ```
-Приложение будет доступно по адресу `http://localhost:1337`.
+
+1.  **Клонируйте репозиторий:**
+    ```sh
+    git clone https://github.com/cuwuvaa/Eclipse.git
+    cd Eclipse
+    ```
+
+2.  **Запустите интерактивный установщик:**
+    Этот скрипт поможет вам настроить окружение, включая учетные данные базы данных, суперпользователя Django и SSL-сертификаты.
+    ```sh
+    ./install.sh
+    ```
+
+3.  **Запустите приложение с помощью Docker:**
+    ```sh
+    docker-compose -f docker-compose.dev.yml up --build
+    ```
+    Приложение будет доступно по адресу `https://localhost:1338`.
 
 ---
 
@@ -146,27 +133,6 @@
 - Автоматически собирает статические файлы
 - Использует производственные настройки
 - Настроена для развертывания
-
-**Команды Docker**:
-```bash
-# Используя Makefile (если доступен):
-make dev          # Запустить среду разработки
-make prod         # Запустить производственную среду
-make dev-down     # Остановить среду разработки
-make prod-down    # Остановить производственную среду
-
-# Используя скрипт управления:
-./docker-manage.sh dev        # Запустить среду разработки
-./docker-manage.sh prod       # Запустить производственную среду
-./docker-manage.sh dev-down   # Остановить среду разработки
-./docker-manage.sh prod-down  # Остановить производственную среду
-./docker-manage.sh logs       # Просмотр логов среды разработки
-./docker-manage.sh clean      # Удалить все Docker контейнеры и volumes
-
-# Или используя docker-compose напрямую:
-docker-compose -f docker-compose.dev.yml up --build    # Разработка
-docker-compose -f docker-compose.prod.yml up --build   # Продакшен
-```
 
 При запуске контейнера приложение автоматически:
 1. Применяет миграции базы данных
@@ -240,42 +206,30 @@ Here is a demonstration of the real-time chat and video connection in action:
 
 #### Getting Started
 
-To get the project up and running on your local machine, you only need Python and Redis.
-
 **Prerequisites**:
-- Python 3.11+
-- Redis
-- Docker and Docker Compose (recommended)
+- Docker and Docker Compose
+- OpenSSL
+- Git
 
 **Instructions**:
-1. Clone the repository and navigate into it:
-   ```sh
-   git clone https://github.com/cuwuvaa/Eclipse.git
-   cd Eclipse
-   ```
-2. Run the project using Docker Compose:
-   ```sh
-   docker-compose up --build
-   ```
-   Or, if you prefer to run the application locally:
-3. Create and activate a virtual environment:
-   ```sh
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-4. Install the required dependencies:
-   ```sh
-   pip install -r requirements.txt
-   ```
-5. Apply the database migrations:
-   ```sh
-   python manage.py migrate
-   ```
-6. Run the development server:
-   ```sh
-   python manage.py runserver
-   ```
-The application will be available at `http://localhost:8000`.
+
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/cuwuvaa/Eclipse.git
+    cd Eclipse
+    ```
+
+2.  **Run the interactive installer:**
+    This script will guide you through setting up your environment, including database credentials, Django superuser, and SSL certificates.
+    ```sh
+    ./install.sh
+    ```
+
+3.  **Run the application with Docker:**
+    ```sh
+    docker-compose -f docker-compose.dev.yml up --build
+    ```
+    The application will be available at `https://localhost:1338`.
 
 ---
 
@@ -307,27 +261,6 @@ The project includes Docker configurations for both development and production e
 - Collects static files automatically
 - Uses production settings
 - Configured for deployment
-
-**Docker Commands**:
-```bash
-# Using Makefile (if available):
-make dev          # Start development environment
-make prod         # Start production environment
-make dev-down     # Stop development environment
-make prod-down    # Stop production environment
-
-# Using the management script:
-./docker-manage.sh dev        # Start development environment
-./docker-manage.sh prod       # Start production environment
-./docker-manage.sh dev-down   # Stop development environment
-./docker-manage.sh prod-down  # Stop production environment
-./docker-manage.sh logs       # View logs from development environment
-./docker-manage.sh clean      # Remove all Docker containers and volumes
-
-# Or using docker-compose directly:
-docker-compose -f docker-compose.dev.yml up --build    # Development
-docker-compose -f docker-compose.prod.yml up --build   # Production
-```
 
 On container startup, the application will automatically:
 1. Apply database migrations

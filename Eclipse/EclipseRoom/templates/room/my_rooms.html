@@ -18,7 +18,7 @@
     <div class="rooms-grid">
       {% for room in rooms %}
         <a href="{% url 'rooms:room' room.id %}" class="room-card">
-          <img src="{{ room.avatar.url }}" alt="{{ room.name }} avatar" class="room-avatar">
+          <img src="{% if room.avatar %}{{ room.avatar.url }}{% else %}{% static 'EclipseRoom/images/defaults/room.png' %}{% endif %}" alt="{{ room.name }} avatar" class="room-avatar">
           <div class="room-card-content">
             <div class="room-card-header">
               <h2 class="room-name">{{ room.name }}</h2>

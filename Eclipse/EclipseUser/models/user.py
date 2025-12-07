@@ -27,15 +27,4 @@ class EclipseUser(AbstractBaseUser, PermissionsMixin):
         if not self.displayname:
             self.displayname = self.username
         
-        if not self.pk and not self.avatar:
-            default_avatars = [
-                'avatars/defaults/account.png',
-                'avatars/defaults/account(1).png',
-                'avatars/defaults/account(2).png',
-                'avatars/defaults/account(3).png',
-                'avatars/defaults/account(4).png',
-                'avatars/defaults/account(5).png',
-            ]
-            self.avatar = random.choice(default_avatars)
-
         super().save(*args, **kwargs)

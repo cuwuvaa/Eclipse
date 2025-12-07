@@ -1,3 +1,4 @@
+from django.contrib.staticfiles.storage import staticfiles_storage
 from rest_framework import serializers
 from EclipseRoom.models.roomuser import RoomUser
 from EclipseRoom.models.room import Room
@@ -21,7 +22,7 @@ class RoomUserProfileSerializer(serializers.ModelSerializer):
     def get_avatar(self, obj):
         if obj.user.avatar and hasattr(obj.user.avatar, 'url'):
             return obj.user.avatar.url
-        return None
+        return staticfiles_storage.url('EclipseUser/images/defaults/account.png')
 
 class RoomSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
@@ -33,7 +34,7 @@ class RoomSerializer(serializers.ModelSerializer):
     def get_avatar(self, obj):
         if obj.avatar and hasattr(obj.avatar, 'url'):
             return obj.avatar.url
-        return None
+        return staticfiles_storage.url('EclipseRoom/images/defaults/room.png')
 
 class RoomUpdateSerializer(serializers.ModelSerializer):
     class Meta:

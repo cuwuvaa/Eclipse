@@ -10,7 +10,7 @@
 {% block content %}
 <div class="profile-container">
   <div class="avatar-section">
-    <img src="{{ USER.avatar.url }}" alt="{{ USER.username }}'s avatar" class="profile-avatar">
+    <img src="{% if USER.avatar %}{{ USER.avatar.url }}{% else %}{% static 'EclipseUser/images/defaults/account.png' %}{% endif %}" alt="{{ USER.username }}'s avatar" class="profile-avatar">
   </div>
 
   <div class="info-section">

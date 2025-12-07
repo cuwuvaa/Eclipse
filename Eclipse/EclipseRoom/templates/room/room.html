@@ -11,7 +11,7 @@
 <div class="room-container">
   <div class="main-room-content">
     <div class="room-header">
-        <img src="{{ room.avatar.url }}" alt="{{ room.name }} avatar" class="room-page-avatar">
+        <img src="{% if room.avatar %}{{ room.avatar.url }}{% else %}{% static 'EclipseRoom/images/defaults/room.png' %}{% endif %}" alt="{{ room.name }} avatar" class="room-page-avatar">
         <div class="room-header-info">
             <h1 class="room-page-title">{{ room.name }}</h1>
             <p class="room-page-description">{{ room.description }}</p>

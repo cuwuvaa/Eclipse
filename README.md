@@ -1,3 +1,12 @@
+[![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-5.2-green?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Django REST](https://img.shields.io/badge/Django%20REST-3.16-red?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
+[![Channels](https://img.shields.io/badge/Django%20Channels-4.3-darkgreen?style=for-the-badge)](https://channels.readthedocs.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-blue?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-red?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![WebRTC](https://img.shields.io/badge/WebRTC-orange?style=for-the-badge&logo=webrtc&logoColor=white)](https://webrtc.org/)
+
+
 # Eclipse: Платформа коммуникаций в реальном времени / Real-Time Communication Platform
 
 ## Содержание / Table of Contents
@@ -29,13 +38,6 @@
 
 ### Eclipse: Платформа коммуникаций в реальном времени
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Django](https://img.shields.io/badge/Django-5.2-green?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
-[![Django REST](https://img.shields.io/badge/Django%20REST-3.16-red?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
-[![Channels](https://img.shields.io/badge/Django%20Channels-4.3-darkgreen?style=for-the-badge)](https://channels.readthedocs.io/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-blue?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Redis](https://img.shields.io/badge/Redis-red?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
-[![WebRTC](https://img.shields.io/badge/WebRTC-orange?style=for-the-badge&logo=webrtc&logoColor=white)](https://webrtc.org/)
 
 **Eclipse** — это мощная платформа чата и голосовой связи в реальном времени, вдохновленная современными социальными платформами. Она построена с масштабируемой архитектурой бэкенда с использованием Django и Django Channels, разработана для эффективной обработки асинхронных коммуникаций.
 
@@ -43,7 +45,7 @@
 
 Вот демонстрация чата в реальном времени и видеосвязи в действии:
 
-![Eclipse Chat and Video Demo](./.github/assets/image.png)
+![Eclipse Chat and Video Demo](./imgs/1.png)
 
 ---
 
@@ -194,23 +196,9 @@ coverage run manage.py test --pattern="test_*.py" && coverage report
 
 ---
 
-#### Лицензия
-
-Распространяется под лицензией MIT. См. файл `LICENSE` для получения дополнительной информации.
-
----
-
 ## English
 
 ### Eclipse: Real-Time Communication Platform
-
-[![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Django](https://img.shields.io/badge/Django-5.2-green?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
-[![Django REST](https://img.shields.io/badge/Django%20REST-3.16-red?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
-[![Channels](https://img.shields.io/badge/Django%20Channels-4.3-darkgreen?style=for-the-badge)](https://channels.readthedocs.io/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-blue?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Redis](https://img.shields.io/badge/Redis-red?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
-[![WebRTC](https://img.shields.io/badge/WebRTC-orange?style=for-the-badge&logo=webrtc&logoColor=white)](https://webrtc.org/)
 
 **Eclipse** is a robust, real-time chat and voice communication platform inspired by modern social platforms. It is built with a scalable backend architecture using Django and Django Channels, designed to handle asynchronous communication efficiently.
 
@@ -218,7 +206,7 @@ coverage run manage.py test --pattern="test_*.py" && coverage report
 
 Here is a demonstration of the real-time chat and video connection in action:
 
-![Eclipse Chat and Video Demo](./.github/assets/image.png)
+![Eclipse Chat and Video Demo](./imgs/1.png)
 
 ---
 
@@ -368,7 +356,3 @@ coverage run manage.py test --pattern="test_*.py" && coverage report
 ```
 
 ---
-
-#### License
-
-Distributed under the MIT License. See `LICENSE` for more information.

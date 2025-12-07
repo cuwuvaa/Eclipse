@@ -28,13 +28,5 @@ class Room(models.Model):
         verbose_name_plural = 'rooms'
 
     def save(self, *args, **kwargs):
-        if not self.avatar:
-            default_avatars = [
-                'rooms/defaults/room.png',
-                'rooms/defaults/room(1).png',
-                'rooms/defaults/room(2).png',
-                'rooms/defaults/room(3).png',
-            ]
-            self.avatar = random.choice(default_avatars)
 
         super().save(*args, **kwargs)

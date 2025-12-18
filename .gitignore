@@ -72,8 +72,6 @@ venv/
 .venv/
 
 # Environment variables
-.env
-.env*
 
 # OS-generated files
 .DS_Store
@@ -86,4 +84,3 @@ Thumbs.db
 
 # Other
 readme2.md
-nginx/ssl/

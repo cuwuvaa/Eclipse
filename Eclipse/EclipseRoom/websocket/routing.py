@@ -1,7 +1,7 @@
 from django.urls import path
-from EclipseRoom.websocket import redis
+from EclipseRoom.websocket import consumers
 
 
 ws_urlpatterns = [
-    path("ws/<int:room_id>/", redis.ChatConsumer.as_asgi())
+    path("ws/<int:room_id>/", consumers.ChatConsumer.as_asgi())
 ]
